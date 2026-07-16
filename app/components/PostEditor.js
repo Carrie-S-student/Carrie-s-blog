@@ -53,7 +53,13 @@ export default function PostEditor({ initialContent = "", onChange }) {
         setUploadError(data.error || "上传失败，请重试。");
         return;
       }
-      editor.chain().focus().setImage({ src: data.url }).run();
+      if (file.type.startsWith("video/")) {
+        editor.chain().focus().insertContent(
+          `<video src="${data.url}" controls style="max-width:100%"></video>`,
+        ).run();
+      } else {
+        editor.chain().focus().setImage({ src: data.url }).run();
+      }
     } catch {
       setUploadError("上传失败，请检查网络后重试。");
     } finally {
@@ -143,13 +149,13 @@ export default function PostEditor({ initialContent = "", onChange }) {
           链接
         </ToolbarButton>
         <ToolbarButton onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-          {uploading ? "上传中…" : "图片"}
+          {uploading ? "上传中…" : "图片/视频"}
         </ToolbarButton>
         <ToolbarButton onClick={addYoutubeLink}>YouTube</ToolbarButton>
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           className="hidden"
           onChange={handleFileChosen}
         />
