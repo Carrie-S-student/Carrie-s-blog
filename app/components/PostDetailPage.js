@@ -7,16 +7,34 @@ import { getVisibleCommentsForPost } from "@/lib/comments";
 import { formatDate } from "@/lib/utils";
 
 export default async function PostDetailPage({ section, basePath, slug }) {
-  const post = await getPublishedPostBySlug(slug);
+  let post, comments;
+  try {
+    post = await getPublishedPostBySlug(slug);
+  } catch (e) {
+    console.error("getPublishedPostBySlug failed:", slug, e);
+    throw e;
+  }
   if (!post || post.section !== section) {
     notFound();
   }
 
-  const comments = await getVisibleCommentsForPost(post.id);
-  const safeHtml = DOMPurify.sanitize(post.content, {
-    ADD_TAGS: ["iframe"],
-    ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "target"],
-  });
+  try {
+    comments = await getVisibleCommentsForPost(post.id);
+  } catch (e) {
+    console.error("getVisibleCommentsForPost failed:", post.id, e);
+    throw e;
+  }
+
+  let safeHtml;
+  try {
+    safeHtml = DOMPurify.sanitize(post.content, {
+      ADD_TAGS: ["iframe"],
+      ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "target"],
+    });
+  } catch (e) {
+    console.error("DOMPurify.sanitize failed:", e);
+    throw e;
+  }
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
