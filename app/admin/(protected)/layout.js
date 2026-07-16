@@ -2,6 +2,8 @@ import Link from "next/link";
 import { requireAdminOrRedirect } from "@/lib/dal";
 import { logout } from "@/app/actions/auth";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: { default: "博客后台", template: "%s · 后台" },
   description: "博客后台管理系统",

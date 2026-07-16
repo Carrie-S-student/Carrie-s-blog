@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "build:netlify": "npx prisma db push --skip-generate && next build"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
