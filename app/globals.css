@@ -1,26 +1,227 @@
 @import "tailwindcss";
 
+/* ================================================================
+   全局动画系统
+   ----------------------------------------------------------------
+   统一缓动函数，用于所有动画以保持视觉一致性。
+   --ease-out：标准减速曲线，适合入场动画
+   --ease-spring：弹性曲线，适合微交互反馈
+   --ease-in-out：对称曲线，适合循环动画
+================================================================== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ================================================================
+   关键帧定义
+=============================================================== */
+
+/* 页面入场：淡入 + 轻微上移 */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero Continue 按钮向下箭头弹跳动画 */
+@keyframes hero-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.7; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+
+/* ================================================================
+   Utility 类：Tailwind v4 @utility 指令
+=============================================================== */
+
+@utility animate-page-enter {
+  animation: page-enter 400ms var(--ease-out) both;
+}
+
+@utility animate-hero-bounce {
+  animation: hero-bounce 1.8s ease-in-out infinite;
+}
+
+/* 通用可点击元素的统一交互效果
+   使用方式：在 button / a 元素上直接加这个 class
+   包含：hover 微放大 + active 按压缩小 + 平滑过渡 */
+.interactive {
+  transition: transform 150ms var(--ease-out), box-shadow 150ms var(--ease-out), opacity 150ms var(--ease-out);
+}
+
+.interactive:hover {
+  transform: scale(1.03);
+}
+
+.interactive:active {
+  transform: scale(0.97);
+}
+
+/* ================================================================
+   无障碍：尊重用户系统级减少动画偏好
+=============================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 让 dark: 变体由 <html class="dark"> 控制，而不是只跟随系统深色模式设置 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Warm magazine-like palette inspired by the template */
+  --background: #fbf7f3; /* warm off-white */
+  --foreground: #1b1a18; /* deep text */
+  --card-background: #ffffff;
+  --card-border: #efe6dd; /* soft beige border */
+  --muted: #7b726b; /* warm muted */
+  --accent: #b86a3e; /* warm terracotta accent */
+}
+
+.dark {
+  --background: #0f0f10;
+  --foreground: #eae6e1;
+  --card-background: #151515;
+  --card-border: #282424;
+  --muted: #9b948f;
+  --accent: #d48b62;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card-background);
+  --color-card-border: var(--card-border);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Georgia, 'Times New Roman', serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 卡片风格的通用样式，首页/列表页的文章卡片都用这个 */
+.card {
+  background: var(--card-background);
+  border: 1px solid var(--card-border);
+  border-radius: 1rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px -22px rgba(27, 26, 24, 0.18);
+}
+
+/* 文章正文排版：后台所见即所得编辑器保存的 HTML 在前台用这个类渲染 */
+.post-content {
+  color: var(--foreground);
+  line-height: 1.8;
+}
+
+.post-content h2 {
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin-top: 2.2rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.01em;
+}
+
+.post-content h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.post-content p {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+  font-size: 1rem;
+}
+
+.post-content a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(184,106,62,0.18);
+  transition: border-color 120ms ease;
+}
+
+.post-content a:hover {
+  border-color: rgba(184,106,62,0.5);
+}
+
+.post-content img,
+.post-content video {
+  border-radius: 0.75rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  max-width: 100%;
+}
+
+.post-content ul,
+.post-content ol {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.post-content ul {
+  list-style-type: disc;
+}
+
+.post-content ol {
+  list-style-type: decimal;
+}
+
+.post-content blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.post-content code {
+  background: var(--card-border);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.35rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.9em;
+}
+
+.post-content pre {
+  background: var(--card-border);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.post-content pre code {
+  background: none;
+  padding: 0;
 }

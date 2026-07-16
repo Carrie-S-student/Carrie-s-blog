@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 文章所属栏目：学习与输入 / 思考与输出
+enum Section {
+  LEARNING // 学习与输入
+  THINKING // 思考与输出
+}
+
+enum CommentStatus {
+  VISIBLE
+  HIDDEN
+}
+
+enum QuestionStatus {
+  PENDING // 待审核
+  PUBLISHED // 已审核并公开（问题+回复都可见）
+  REJECTED // 审核后不公开
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  excerpt   String? // 列表页摘要，留空则自动截取正文
+  content   String // WYSIWYG 编辑器产出的 HTML
+  coverImage String? // 封面图 URL（Vercel Blob）
+  section   Section
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  publishedAt DateTime?
+
+  comments Comment[]
+  tags     PostTag[]
+
+  @@index([section, published, publishedAt])
+}
+
+// 标签：相当于每个栏目页下的"文件夹"，对文章进行分类
+model Tag {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String
+  section   Section
+  createdAt DateTime @default(now())
+
+  posts     PostTag[]
+
+  @@unique([slug, section])
+}
+
+// 文章-标签多对多关联表
+model PostTag {
+  postId String
+  tagId  String
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  postId    String
+  post      Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  nickname  String
+  content   String
+  status    CommentStatus @default(VISIBLE)
+  createdAt DateTime      @default(now())
+  ip        String? // 用于简单防刷（限流）
+
+  @@index([postId, status, createdAt])
+}
+
+model Question {
+  id          String         @id @default(cuid())
+  nickname    String? // 可匿名
+  content     String
+  reply       String?
+  status      QuestionStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  repliedAt   DateTime?
+  ip          String?
+
+  @@index([status, createdAt])
+}
+
+model Research {
+  id            String   @id @default(cuid())
+  title         String
+  publishedDate DateTime
+  journal       String
+  createdAt     DateTime @default(now())
+
+  @@index([publishedDate])
+}
+
+model AdminSettings {
+  id              Int     @id @default(1)
+  passwordHash    String?
+  heroImage       String?
+  heroTitle       String?
+  heroSubtitle    String?
+  aboutTitle      String?
+  aboutParagraph1 String?
+  aboutParagraph2 String?
+  aboutPhotoUrl   String?
+}
