@@ -4,6 +4,9 @@ import AboutBio from "@/app/components/AboutBio";
 import SectionNavCard from "@/app/components/SectionNavCard";
 import ContactCard from "@/app/components/ContactCard";
 
+// 强制动态渲染，保证后台修改的站点设置（如照片）能立即在前端生效
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "关于我",
   description: "关于站长的一些介绍",
