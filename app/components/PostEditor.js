@@ -42,24 +42,38 @@ export default function PostEditor({ initialContent = "", onChange }) {
     event.target.value = "";
     if (!file || !editor) return;
 
+    // 视频不支持 base64 内嵌（太大），提示用 YouTube
+    if (file.type.startsWith("video/")) {
+      setUploadError("视频不支持直接上传，请用 YouTube 按钮嵌入视频链接。");
+      return;
+    }
+
     setUploading(true);
     setUploadError("");
+
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+      // 用 FileReader 把图片文件转成 base64 data URL
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("读取文件失败"));
+        reader.readAsDataURL(file);
+      });
+
+      // 把 base64 字符串 POST 到后端校验
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: dataUrl }),
+      });
       const data = await res.json();
       if (!res.ok) {
         setUploadError(data.error || "上传失败，请重试。");
         return;
       }
-      if (file.type.startsWith("video/")) {
-        editor.chain().focus().insertContent(
-          `<video src="${data.url}" controls style="max-width:100%"></video>`,
-        ).run();
-      } else {
-        editor.chain().focus().setImage({ src: data.url }).run();
-      }
+
+      // data.url 就是 base64 data URL，直接插入编辑器
+      editor.chain().focus().setImage({ src: data.url }).run();
     } catch {
       setUploadError("上传失败，请检查网络后重试。");
     } finally {
@@ -149,13 +163,13 @@ export default function PostEditor({ initialContent = "", onChange }) {
           链接
         </ToolbarButton>
         <ToolbarButton onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-          {uploading ? "上传中…" : "图片/视频"}
+          {uploading ? "上传中…" : "上传图片"}
         </ToolbarButton>
         <ToolbarButton onClick={addYoutubeLink}>YouTube</ToolbarButton>
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*,video/*"
+          accept="image/*"
           className="hidden"
           onChange={handleFileChosen}
         />

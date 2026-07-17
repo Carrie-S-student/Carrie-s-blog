@@ -1,15 +1,16 @@
-import { put } from "@vercel/blob";
 import { requireAdmin } from "@/lib/dal";
 
-const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20MB，够用来放文章配图和短视频
-const ALLOWED_PREFIXES = ["image/", "video/"];
+const MAX_BASE64_LENGTH = 5 * 1024 * 1024; // base64 字符串不超过 ~5MB（解码后约 3.7MB）
+const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"];
 
 /**
- * 后台专用的图片/视频上传接口。用 Route Handler 而不是 Server Action，
- * 是因为 Server Action 默认限制请求体只有 1MB，放不下图片视频。
+ * 后台图片上传接口。采用 base64 内嵌方案：前端用 FileReader 把图片文件
+ * 转成 data:image/xxx;base64,... 格式，通过 JSON POST 到这里校验后，
+ * 返回同样的 data URL。这个 URL 可以直接嵌入文章 HTML 或站点设置字段，
+ * 不需要任何云存储服务，适用于 Netlify 等平台。
  *
- * 前端（Tiptap 编辑器工具栏）选好文件后，用 FormData 把文件 POST 到这里，
- * 上传成功后返回 { url }，前端再把这个 url 插入到文章内容里。
+ * 缺点：base64 编码会使数据膨胀约 33%，图片直接存在数据库的文章正文里，
+ * 会增加数据库体积。建议只上传小尺寸配图（几百 KB 以内）。
  */
 export async function POST(request) {
   try {
@@ -18,33 +19,37 @@ export async function POST(request) {
     return Response.json({ error: "未登录或登录已过期，请重新登录后台。" }, { status: 401 });
   }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "请求格式错误，需要 JSON 格式。" }, { status: 400 });
+  }
+
+  const dataUrl = body.data;
+
+  if (!dataUrl || typeof dataUrl !== "string") {
+    return Response.json({ error: "没有收到图片数据。" }, { status: 400 });
+  }
+
+  // 校验 data URL 格式：data:image/xxx;base64,...
+  const match = dataUrl.match(/^data:(image\/[\w+-]+);base64,(.+)$/);
+  if (!match) {
+    return Response.json({ error: "图片数据格式不正确，需要 base64 编码的 data URL。" }, { status: 400 });
+  }
+
+  const mimeType = match[1];
+  if (!ALLOWED_IMAGE_TYPES.includes(mimeType)) {
     return Response.json(
-      { error: "还没有配置 BLOB_READ_WRITE_TOKEN，暂时无法上传文件，请先在 .env 中配置 Vercel Blob。" },
-      { status: 500 },
+      { error: `不支持的图片格式：${mimeType}，支持 png / jpeg / gif / webp / svg。` },
+      { status: 400 },
     );
   }
 
-  const formData = await request.formData();
-  const file = formData.get("file");
-
-  if (!file || typeof file === "string") {
-    return Response.json({ error: "没有收到文件。" }, { status: 400 });
+  if (dataUrl.length > MAX_BASE64_LENGTH) {
+    return Response.json({ error: "图片太大了，请压缩后再上传（建议 2MB 以内）。" }, { status: 400 });
   }
 
-  const isAllowedType = ALLOWED_PREFIXES.some((prefix) => file.type.startsWith(prefix));
-  if (!isAllowedType) {
-    return Response.json({ error: "只能上传图片或视频文件。" }, { status: 400 });
-  }
-
-  if (file.size > MAX_FILE_SIZE_BYTES) {
-    return Response.json({ error: "文件太大了，最多支持 20MB。" }, { status: 400 });
-  }
-
-  const blob = await put(file.name, file, {
-    access: "public",
-    addRandomSuffix: true,
-  });
-
-  return Response.json({ url: blob.url });
+  // base64 方案：直接把 data URL 原样返回，前端插入到 HTML 中即可
+  return Response.json({ url: dataUrl });
 }

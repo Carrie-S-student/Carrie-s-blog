@@ -1,13 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "*.public.blob.vercel-storage.com",
-      },
-    ],
-  },
+  // Netlify/通用 serverless 环境需要把 pg 标为外部包，避免打包问题
+  serverExternalPackages: ["pg"],
 };
 
 export default nextConfig;

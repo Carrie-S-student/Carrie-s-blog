@@ -15,12 +15,19 @@ function ImageUploader({ label, currentUrl, previewLabel, onChange }) {
     setUploading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      // 用 FileReader 把图片文件转成 base64 data URL
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("读取文件失败"));
+        reader.readAsDataURL(file);
+      });
 
+      // 把 base64 字符串 POST 到后端校验
       const res = await fetch("/api/admin/upload", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: dataUrl }),
       });
 
       const data = await res.json();
