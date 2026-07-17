@@ -10,10 +10,11 @@ import { useRef, useState } from "react";
 
 /**
  * 后台文章正文的所见即所得编辑器。
- * 工具栏上的按钮直接对应常见排版操作，图片/视频按钮会调用 /api/admin/upload 上传后插入。
+ * 图片/视频通过 Vercel Blob 上传，返回公开 URL 后插入编辑器。
  */
 export default function PostEditor({ initialContent = "", onChange }) {
-  const fileInputRef = useRef(null);
+  const imageInputRef = useRef(null);
+  const videoInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
 
@@ -37,47 +38,54 @@ export default function PostEditor({ initialContent = "", onChange }) {
     },
   });
 
-  async function handleFileChosen(event) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file || !editor) return;
-
-    // 视频不支持 base64 内嵌（太大），提示用 YouTube
-    if (file.type.startsWith("video/")) {
-      setUploadError("视频不支持直接上传，请用 YouTube 按钮嵌入视频链接。");
-      return;
-    }
-
+  /** 通用文件上传：FormData 发送文件到 /api/admin/upload，返回公网 URL */
+  async function uploadFile(file) {
     setUploading(true);
     setUploadError("");
 
     try {
-      // 用 FileReader 把图片文件转成 base64 data URL
-      const dataUrl = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(new Error("读取文件失败"));
-        reader.readAsDataURL(file);
-      });
+      const formData = new FormData();
+      formData.append("file", file);
 
-      // 把 base64 字符串 POST 到后端校验
       const res = await fetch("/api/admin/upload", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: dataUrl }),
+        body: formData,
       });
       const data = await res.json();
       if (!res.ok) {
-        setUploadError(data.error || "上传失败，请重试。");
-        return;
+        throw new Error(data.error || "上传失败，请重试。");
       }
-
-      // data.url 就是 base64 data URL，直接插入编辑器
-      editor.chain().focus().setImage({ src: data.url }).run();
-    } catch {
-      setUploadError("上传失败，请检查网络后重试。");
+      return data.url;
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function handleImageChosen(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !editor) return;
+
+    try {
+      const url = await uploadFile(file);
+      editor.chain().focus().setImage({ src: url }).run();
+    } catch (err) {
+      setUploadError(err.message || "上传失败，请检查网络后重试。");
+    }
+  }
+
+  async function handleVideoChosen(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !editor) return;
+
+    try {
+      const url = await uploadFile(file);
+      // 插入视频元素：用 <video> 标签嵌入
+      const videoHtml = `<video controls style="max-width:100%;border-radius:8px;" src="${url}"></video>`;
+      editor.chain().focus().insertContent(videoHtml).run();
+    } catch (err) {
+      setUploadError(err.message || "上传失败，请检查网络后重试。");
     }
   }
 
@@ -162,19 +170,30 @@ export default function PostEditor({ initialContent = "", onChange }) {
         <ToolbarButton active={editor.isActive("link")} onClick={addLink}>
           链接
         </ToolbarButton>
-        <ToolbarButton onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+        <ToolbarButton onClick={() => imageInputRef.current?.click()} disabled={uploading}>
           {uploading ? "上传中…" : "上传图片"}
+        </ToolbarButton>
+        <ToolbarButton onClick={() => videoInputRef.current?.click()} disabled={uploading}>
+          {uploading ? "上传中…" : "上传视频"}
         </ToolbarButton>
         <ToolbarButton onClick={addYoutubeLink}>YouTube</ToolbarButton>
         <input
-          ref={fileInputRef}
+          ref={imageInputRef}
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={handleFileChosen}
+          onChange={handleImageChosen}
+        />
+        <input
+          ref={videoInputRef}
+          type="file"
+          accept="video/*"
+          className="hidden"
+          onChange={handleVideoChosen}
         />
       </div>
       {uploadError && <p className="px-3 pt-2 text-sm text-red-500">{uploadError}</p>}
+      {uploading && <p className="px-3 pt-2 text-sm text-muted">文件上传中，请稍候…</p>}
       <div className="px-4 py-3">
         <EditorContent editor={editor} />
       </div>
