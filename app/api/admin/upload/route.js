@@ -1,5 +1,8 @@
 import { requireAdmin } from "@/lib/dal";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 30;
+
 const MAX_BASE64_LENGTH = 5 * 1024 * 1024; // base64 字符串不超过 ~5MB（解码后约 3.7MB）
 const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"];
 
