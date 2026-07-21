@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import AdminReplyForm from "@/app/components/AdminReplyForm";
 import { hideCommentAction, showCommentAction, deleteCommentAction } from "@/app/actions/comments-admin";
 import { formatDateTime, sectionPath } from "@/lib/utils";
+
+/** 用 useTransition 包裹 server action 调用，避免 inline "use server" */
+function useAdminAction() {
+  const [isPending, startTransition] = useTransition();
+  async function run(actionFn, id, postId) {
+    startTransition(async () => {
+      await actionFn(id, postId);
+    });
+  }
+  return { isPending, run };
+}
 
 function postHref(post) {
   return `${sectionPath(post.section)}/${post.slug}`;
@@ -14,6 +25,7 @@ const MAX_NEST_DEPTH = 6;
 
 export default function AdminCommentCard({ comment, depth }) {
   const [showReply, setShowReply] = useState(false);
+  const { isPending, run } = useAdminAction();
   const tooDeep = depth >= MAX_NEST_DEPTH;
   const isParent = depth === 0;
   const postLink = comment.post
@@ -50,11 +62,11 @@ export default function AdminCommentCard({ comment, depth }) {
           <div className="mt-3 flex items-center gap-4 text-sm">
             <StatusBadge status={comment.status} size="sm" />
             {comment.status === "VISIBLE" ? (
-              <AdminHideButton id={comment.id} postId={comment.postId} />
+              <AdminHideButton id={comment.id} postId={comment.postId} onAction={run} isPending={isPending} />
             ) : (
-              <AdminShowButton id={comment.id} postId={comment.postId} />
+              <AdminShowButton id={comment.id} postId={comment.postId} onAction={run} isPending={isPending} />
             )}
-            <AdminDeleteButton id={comment.id} postId={comment.postId} />
+            <AdminDeleteButton id={comment.id} postId={comment.postId} onAction={run} isPending={isPending} />
             {!tooDeep && (
               <button
                 type="button"
@@ -109,11 +121,11 @@ export default function AdminCommentCard({ comment, depth }) {
             <div className="mt-2 flex items-center gap-3 text-xs">
               <StatusBadge status={comment.status} size="xs" />
               {comment.status === "VISIBLE" ? (
-                <AdminHideButton id={comment.id} postId={comment.postId} />
+                <AdminHideButton id={comment.id} postId={comment.postId} onAction={run} isPending={isPending} />
               ) : (
-                <AdminShowButton id={comment.id} postId={comment.postId} />
+                <AdminShowButton id={comment.id} postId={comment.postId} onAction={run} isPending={isPending} />
               )}
-              <AdminDeleteButton id={comment.id} postId={comment.postId} />
+              <AdminDeleteButton id={comment.id} postId={comment.postId} onAction={run} isPending={isPending} />
               {!tooDeep && (
                 <button
                   type="button"
@@ -169,56 +181,41 @@ function StatusBadge({ status, size }) {
   );
 }
 
-function AdminHideButton({ id, postId }) {
+function AdminHideButton({ id, postId, onAction, isPending }) {
   return (
-    <form
-      action={async () => {
-        "use server";
-        await hideCommentAction(id, postId);
-      }}
+    <button
+      type="button"
+      disabled={isPending}
+      onClick={() => onAction(hideCommentAction, id, postId)}
+      className="text-neutral-700 underline dark:text-neutral-300 text-xs disabled:opacity-40"
     >
-      <button
-        type="submit"
-        className="text-neutral-700 underline dark:text-neutral-300 text-xs"
-      >
-        隐藏
-      </button>
-    </form>
+      隐藏
+    </button>
   );
 }
 
-function AdminShowButton({ id, postId }) {
+function AdminShowButton({ id, postId, onAction, isPending }) {
   return (
-    <form
-      action={async () => {
-        "use server";
-        await showCommentAction(id, postId);
-      }}
+    <button
+      type="button"
+      disabled={isPending}
+      onClick={() => onAction(showCommentAction, id, postId)}
+      className="text-neutral-700 underline dark:text-neutral-300 text-xs disabled:opacity-40"
     >
-      <button
-        type="submit"
-        className="text-neutral-700 underline dark:text-neutral-300 text-xs"
-      >
-        重新显示
-      </button>
-    </form>
+      重新显示
+    </button>
   );
 }
 
-function AdminDeleteButton({ id, postId }) {
+function AdminDeleteButton({ id, postId, onAction, isPending }) {
   return (
-    <form
-      action={async () => {
-        "use server";
-        await deleteCommentAction(id, postId);
-      }}
+    <button
+      type="button"
+      disabled={isPending}
+      onClick={() => onAction(deleteCommentAction, id, postId)}
+      className="text-red-600 underline dark:text-red-400 text-xs disabled:opacity-40"
     >
-      <button
-        type="submit"
-        className="text-red-600 underline dark:text-red-400 text-xs"
-      >
-        删除
-      </button>
-    </form>
+      删除
+    </button>
   );
 }
