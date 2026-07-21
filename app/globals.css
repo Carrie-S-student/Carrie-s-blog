@@ -480,3 +480,128 @@ body {
 .dark .hljs-selector-pseudo { color: #ff7b72; }
 .dark .hljs-meta,
 .dark .hljs-doctag { color: #8b949e; }
+
+/* ================================================================
+   TOC（目录）组件样式
+   固定在文章左侧的粘性导航，桌面端可见。
+=============================================================== */
+.toc__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc__link {
+  border-left: 2px solid transparent;
+  padding-left: 0.6rem;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.toc__link:hover {
+  border-left-color: var(--card-border);
+}
+
+/* 当前活跃标题 — 左侧 accent 色指示条 */
+.toc__link.text-accent {
+  border-left-color: var(--accent);
+}
+
+/* ================================================================
+   Mermaid 图表样式
+   ────────────────────────────────────────────────────────────────
+   深色模式下反转 SVG 配色，确保图表在暗色背景下可读。
+=============================================================== */
+.mermaid-wrapper {
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  background: var(--card-background);
+  border: 1px solid var(--card-border);
+  padding: 1rem;
+}
+
+.mermaid-wrapper svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 深色模式：为 Mermaid 的浅色文字区域补充背景 */
+.dark .mermaid-wrapper {
+  background: #1a1a1e;
+  border-color: #282424;
+}
+
+/* ================================================================
+   KaTeX 数学公式样式增强
+   ────────────────────────────────────────────────────────────────
+   katex/dist/katex.min.css 提供基础样式，此处仅做微调。
+=============================================================== */
+
+/* 行内公式：与文本对齐 */
+.post-content .math-inline .katex {
+  font-size: 1.05em;
+}
+
+/* 块级公式：居中 + 上下留白 */
+.post-content .math-block {
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-align: center;
+}
+
+.post-content .math-block .katex-display {
+  margin: 0;
+}
+
+/* KaTeX 错误时的容错展示 */
+.post-content .katex-error {
+  color: #d6473f;
+  font-style: italic;
+}
+
+/* 深色模式：KaTeX 公式颜色适配 */
+.dark .post-content .katex {
+  color: var(--foreground);
+}
+
+/* ================================================================
+   Obsidian 嵌入语法 ![[page]] 的基础样式（预留）
+   ────────────────────────────────────────────────────────────────
+   当维基链接目标无法解析为具体页面时，显示为特殊的内嵌卡片。
+=============================================================== */
+.post-content .embed-block {
+  border: 1px dashed var(--card-border);
+  border-radius: 0.75rem;
+  padding: 1rem 1.2rem;
+  margin: 1rem 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  background: var(--background);
+}
+
+/* ================================================================
+   Obsidian 脚注样式
+   ────────────────────────────────────────────────────────────────
+   marked GFM 自动渲染脚注为 <sup> + <section class="footnotes">
+=============================================================== */
+.post-content .footnotes {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--card-border);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.post-content .footnotes ol {
+  padding-left: 1.2rem;
+}
+
+.post-content .footnotes li {
+  margin-bottom: 0.4rem;
+}
+
+.post-content sup a[href^="#user-content-fn"] {
+  border-bottom: none;
+  font-size: 0.8em;
+  color: var(--accent);
+}
