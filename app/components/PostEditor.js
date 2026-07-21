@@ -6,17 +6,32 @@ import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Youtube from "@tiptap/extension-youtube";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import FileImportButton from "@/app/components/FileImportButton";
 
 /**
  * 后台文章正文的所见即所得编辑器。
  * 图片/视频通过 Vercel Blob 上传，返回公开 URL 后插入编辑器。
+ *
+ * Props:
+ *   initialContent  - 初始 HTML 内容
+ *   replaceContent  - 当此值变化时，用新 HTML 替换编辑器全部内容
+ *   onChange        - 内容变化回调
+ *   onImportTitle   - 导入文档时提取到的标题回调
+ *   onImportInfo    - 导入完成后的附加信息回调（图片警告等）
  */
-export default function PostEditor({ initialContent = "", onChange }) {
+export default function PostEditor({
+  initialContent = "",
+  replaceContent,
+  onChange,
+  onImportTitle,
+  onImportInfo,
+}) {
   const imageInputRef = useRef(null);
   const videoInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [importInfo, setImportInfo] = useState(null);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -37,6 +52,14 @@ export default function PostEditor({ initialContent = "", onChange }) {
       onChange?.(editor.getHTML());
     },
   });
+
+  // 当 replaceContent 变化时，替换编辑器全部内容
+  useEffect(() => {
+    if (editor && replaceContent != null) {
+      editor.commands.setContent(replaceContent);
+      onChange?.(replaceContent);
+    }
+  }, [replaceContent]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /** 通用文件上传：FormData 发送文件到 /api/admin/upload，返回公网 URL */
   async function uploadFile(file) {
@@ -108,6 +131,18 @@ export default function PostEditor({ initialContent = "", onChange }) {
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   }
 
+  function handleImport({ html, title, format, imagesToUpload, imagesExtracted, warnings }) {
+    if (editor) {
+      editor.commands.setContent(html);
+      onChange?.(html);
+    }
+    if (title) onImportTitle?.(title);
+
+    const info = { format, imagesToUpload, imagesExtracted, warnings };
+    setImportInfo(info);
+    onImportInfo?.(info);
+  }
+
   if (!editor) {
     return (
       <div className="min-h-[340px] rounded-xl border border-card-border bg-card p-4 text-sm text-muted">
@@ -177,6 +212,9 @@ export default function PostEditor({ initialContent = "", onChange }) {
           {uploading ? "上传中…" : "上传视频"}
         </ToolbarButton>
         <ToolbarButton onClick={addYoutubeLink}>YouTube</ToolbarButton>
+        <div className="ml-2 border-l border-card-border pl-2">
+          <FileImportButton onImported={handleImport} />
+        </div>
         <input
           ref={imageInputRef}
           type="file"
@@ -194,6 +232,9 @@ export default function PostEditor({ initialContent = "", onChange }) {
       </div>
       {uploadError && <p className="px-3 pt-2 text-sm text-red-500">{uploadError}</p>}
       {uploading && <p className="px-3 pt-2 text-sm text-muted">文件上传中，请稍候…</p>}
+      {importInfo && (
+        <ImportInfoPanel info={importInfo} onDismiss={() => setImportInfo(null)} />
+      )}
       <div className="px-4 py-3">
         <EditorContent editor={editor} />
       </div>
@@ -213,5 +254,50 @@ function ToolbarButton({ children, onClick, active, disabled }) {
     >
       {children}
     </button>
+  );
+}
+
+function ImportInfoPanel({ info, onDismiss }) {
+  const { format, imagesToUpload, imagesExtracted, warnings } = info;
+  const label = format === "docx" ? "Word 文档" : "Markdown";
+
+  return (
+    <div className="mx-4 mb-3 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950">
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-sm text-blue-800 dark:text-blue-200">
+          <p className="font-medium">{label} 导入成功</p>
+          {imagesExtracted > 0 && (
+            <p className="mt-1">
+              已从文档中提取并上传 <strong>{imagesExtracted}</strong> 张图片到云存储。
+            </p>
+          )}
+          {imagesToUpload && imagesToUpload.length > 0 && (
+            <div className="mt-2 rounded bg-white/60 p-2 dark:bg-blue-900/40">
+              <p className="font-medium">以下图片引用来自本地文件，需手动上传：</p>
+              <ul className="mt-1 list-inside list-disc text-xs opacity-80">
+                {imagesToUpload.map((img, i) => (
+                  <li key={i}>{img}</li>
+                ))}
+              </ul>
+              <p className="mt-1 text-xs opacity-70">
+                请使用工具栏「上传图片」按钮逐一替换这些图片占位符。
+              </p>
+            </div>
+          )}
+          {warnings && warnings.length > 0 && (
+            <p className="mt-1 text-xs opacity-70">
+              {warnings.length} 条警告（格式兼容性提示，通常不影响使用）
+            </p>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="shrink-0 text-blue-500 hover:text-blue-700 dark:text-blue-400"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
   );
 }

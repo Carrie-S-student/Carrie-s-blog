@@ -16,6 +16,7 @@ const SECTION_OPTIONS = [
 export default function PostForm({ action, post, availableTags = [] }) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const [content, setContent] = useState(post?.content || "");
+  const [title, setTitle] = useState(post?.title || "");
   const [selectedSection, setSelectedSection] = useState(post?.section || "LEARNING");
 
   // 受控标签选中状态：以 React state 为准，不再依赖 DOM defaultChecked
@@ -56,7 +57,8 @@ export default function PostForm({ action, post, availableTags = [] }) {
         <label className="mb-1 block text-sm font-medium text-foreground">标题</label>
         <input
           name="title"
-          defaultValue={post?.title || ""}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
           required
           maxLength={200}
           className="w-full rounded-lg border border-card-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
@@ -140,7 +142,11 @@ export default function PostForm({ action, post, availableTags = [] }) {
 
       <div>
         <label className="mb-1 block text-sm font-medium text-foreground">正文</label>
-        <PostEditor initialContent={post?.content || ""} onChange={setContent} />
+        <PostEditor
+          initialContent={post?.content || ""}
+          onChange={setContent}
+          onImportTitle={setTitle}
+        />
       </div>
 
       <div className="flex items-center gap-3">
