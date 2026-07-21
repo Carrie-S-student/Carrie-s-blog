@@ -41,7 +41,7 @@ export async function submitComment(prevState, formData) {
 }
 
 /**
- * 回复某条评论（只能回复顶级评论，不支持嵌套回复回复）。
+ * 回复某条评论（支持任意深度嵌套：可以回复任意评论）。
  * parentId 通过 bind 绑定，postPath 和 postId 放在 hidden input 里。
  */
 export async function submitReply(parentId, prevState, formData) {
