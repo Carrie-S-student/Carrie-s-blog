@@ -26,7 +26,7 @@ export default function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label="切换深色模式"
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-card-border text-foreground transition hover:bg-card interactive"
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-card-border bg-background/80 text-foreground shadow-lg backdrop-blur-sm transition hover:bg-card interactive"
     >
       {isDark === null ? null : isDark ? (
         <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.5" stroke="currentColor" className="h-5 w-5">

@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import SiteNav from "@/app/components/SiteNav";
+import Link from "next/link";
 import SiteFooter from "@/app/components/SiteFooter";
+import ThemeToggle from "@/app/components/ThemeToggle";
 import PageTransition from "@/app/components/PageTransition";
 import "./globals.css";
 
@@ -54,7 +55,19 @@ export default function RootLayout({ children }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="flex min-h-full flex-col bg-background text-foreground">
-        <SiteNav />
+        {/* 左上角：透明背景的返回主页按键 */}
+        <Link
+          href="/"
+          className="fixed top-5 left-5 z-50 text-lg font-semibold tracking-wide text-foreground/90 transition hover:text-accent"
+        >
+          Carrie&apos;s blog
+        </Link>
+
+        {/* 右下角：明暗模式切换按键 */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <ThemeToggle />
+        </div>
+
         <main className="flex-1">
           <PageTransition>{children}</PageTransition>
         </main>

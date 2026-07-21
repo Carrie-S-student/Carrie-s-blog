@@ -107,7 +107,6 @@ export default async function PostDetailPage({ section, basePath, slug }) {
       // 通用全局属性
       "*": ["id", "class", "style", "data-*"],
     },
-    },
     allowedClasses: {
       // KaTeX 会生成大量动态 class（katex-*, mord, mbin, strut 等），
       // 白名单方式不现实，允许所有 class 在这些元素上。
