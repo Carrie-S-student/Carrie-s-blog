@@ -225,3 +225,85 @@ body {
   background: none;
   padding: 0;
 }
+
+/* 文字高亮（<mark>）：类似荧光笔效果 */
+.post-content mark,
+.ProseMirror mark {
+  background: linear-gradient(180deg, transparent 50%, rgba(255, 210, 63, 0.45) 50%);
+  border-radius: 0.15rem;
+  padding: 0.05rem 0.15rem;
+  color: inherit;
+}
+
+/* ================================================================
+   代码语法高亮（lowlight / highlight.js 主题）
+   自定义浅色/深色双主题，class 名前缀 hljs- 与 lowlight 一致
+=============================================================== */
+
+/* ---- 浅色主题 ---- */
+.post-content pre code [class^="hljs-"],
+.ProseMirror pre code [class^="hljs-"] {
+  color: var(--fg);
+}
+
+.hljs-comment,
+.hljs-quote { color: #8b8b8b; font-style: italic; }
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-type { color: #c44b6b; }
+.hljs-string,
+.hljs-regexp,
+.hljs-addition { color: #3f9142; }
+.hljs-number,
+.hljs-literal,
+.hljs-boolean { color: #b45f06; }
+.hljs-title,
+.hljs-section,
+.hljs-name { color: #3b6ea5; }
+.hljs-built_in,
+.hljs-selector-class,
+.hljs-selector-id { color: #896c1a; }
+.hljs-attr,
+.hljs-attribute,
+.hljs-variable,
+.hljs-template-variable { color: #b45f06; }
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link { color: #3b6ea5; }
+.hljs-deletion,
+.hljs-tag,
+.hljs-selector-pseudo { color: #c44b4b; }
+.hljs-meta,
+.hljs-doctag { color: #8b8b8b; }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong { font-weight: 700; }
+
+/* ---- 深色主题 ---- */
+.dark .hljs-comment,
+.dark .hljs-quote { color: #8b949e; font-style: italic; }
+.dark .hljs-keyword,
+.dark .hljs-selector-tag,
+.dark .hljs-type { color: #ff7b72; }
+.dark .hljs-string,
+.dark .hljs-regexp,
+.dark .hljs-addition { color: #7ee787; }
+.dark .hljs-number,
+.dark .hljs-literal,
+.dark .hljs-boolean { color: #d2a8ff; }
+.dark .hljs-title,
+.dark .hljs-section,
+.dark .hljs-name { color: #79c0ff; }
+.dark .hljs-built_in,
+.dark .hljs-selector-class { color: #ffa657; }
+.dark .hljs-attr,
+.dark .hljs-attribute,
+.dark .hljs-variable,
+.dark .hljs-template-variable { color: #ffa657; }
+.dark .hljs-symbol,
+.dark .hljs-bullet,
+.dark .hljs-link { color: #79c0ff; }
+.dark .hljs-deletion,
+.dark .hljs-tag,
+.dark .hljs-selector-pseudo { color: #ff7b72; }
+.dark .hljs-meta,
+.dark .hljs-doctag { color: #8b949e; }

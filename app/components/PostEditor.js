@@ -6,8 +6,13 @@ import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Youtube from "@tiptap/extension-youtube";
 import Placeholder from "@tiptap/extension-placeholder";
+import Highlight from "@tiptap/extension-highlight";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { common, createLowlight } from "lowlight";
 import { useRef, useState, useEffect } from "react";
 import FileImportButton from "@/app/components/FileImportButton";
+
+const lowlight = createLowlight(common);
 
 /**
  * 后台文章正文的所见即所得编辑器。
@@ -32,15 +37,20 @@ export default function PostEditor({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [importInfo, setImportInfo] = useState(null);
+  const [previewMode, setPreviewMode] = useState(false);
 
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        codeBlock: false, // 关闭默认 codeBlock，改用 CodeBlockLowlight
+      }),
       Image,
       Link.configure({ openOnClick: false, autolink: true }),
       Youtube.configure({ nocookie: true }),
       Placeholder.configure({ placeholder: "开始写点什么…" }),
+      Highlight,
+      CodeBlockLowlight.configure({ lowlight }),
     ],
     content: initialContent,
     editorProps: {
@@ -141,6 +151,8 @@ export default function PostEditor({
     const info = { format, imagesToUpload, imagesExtracted, warnings };
     setImportInfo(info);
     onImportInfo?.(info);
+    // 导入后自动切换预览，方便检查文档渲染效果
+    setPreviewMode(true);
   }
 
   if (!editor) {
@@ -202,6 +214,12 @@ export default function PostEditor({
         >
           代码块
         </ToolbarButton>
+        <ToolbarButton
+          active={editor.isActive("highlight")}
+          onClick={() => editor.chain().focus().toggleHighlight().run()}
+        >
+          高亮
+        </ToolbarButton>
         <ToolbarButton active={editor.isActive("link")} onClick={addLink}>
           链接
         </ToolbarButton>
@@ -214,6 +232,14 @@ export default function PostEditor({
         <ToolbarButton onClick={addYoutubeLink}>YouTube</ToolbarButton>
         <div className="ml-2 border-l border-card-border pl-2">
           <FileImportButton onImported={handleImport} />
+        </div>
+        <div className="ml-auto">
+          <ToolbarButton
+            active={previewMode}
+            onClick={() => setPreviewMode((v) => !v)}
+          >
+            {previewMode ? "编辑" : "预览"}
+          </ToolbarButton>
         </div>
         <input
           ref={imageInputRef}
@@ -236,7 +262,14 @@ export default function PostEditor({
         <ImportInfoPanel info={importInfo} onDismiss={() => setImportInfo(null)} />
       )}
       <div className="px-4 py-3">
-        <EditorContent editor={editor} />
+        {previewMode ? (
+          <div
+            className="post-content min-h-[300px]"
+            dangerouslySetInnerHTML={{ __html: editor.getHTML() }}
+          />
+        ) : (
+          <EditorContent editor={editor} />
+        )}
       </div>
     </div>
   );
