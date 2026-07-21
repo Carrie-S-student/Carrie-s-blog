@@ -205,6 +205,179 @@ body {
   font-style: italic;
 }
 
+/* ================================================================
+   Obsidian Callout 样式（> [!note] / > [!warning] 等）
+   从 MD 解析为 <blockquote class="callout callout--<type>">
+=============================================================== */
+.post-content .callout {
+  font-style: normal;
+  border-radius: 0.75rem;
+  padding: 0.9rem 1.2rem;
+  margin: 1.5rem 0;
+  border: 1px solid transparent;
+  border-left-width: 4px;
+  line-height: 1.75;
+}
+
+.post-content .callout .callout__title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem;
+}
+
+.post-content .callout p {
+  margin: 0.35rem 0;
+  font-size: 0.95rem;
+}
+
+/* ---- 各类型配色 ---- */
+
+/* note */
+.post-content .callout--note {
+  background: #eef4ff;
+  border-color: #4782d6;
+  color: #1e3b63;
+}
+.dark .post-content .callout--note {
+  background: #111d32;
+  border-color: #4782d6;
+  color: #bdd2f0;
+}
+
+/* warning */
+.post-content .callout--warning {
+  background: #fff8e6;
+  border-color: #e6a817;
+  color: #6b5100;
+}
+.dark .post-content .callout--warning {
+  background: #2a220e;
+  border-color: #e6a817;
+  color: #f0d98c;
+}
+
+/* danger */
+.post-content .callout--danger {
+  background: #fff1f0;
+  border-color: #d6473f;
+  color: #631c1a;
+}
+.dark .post-content .callout--danger {
+  background: #2a1110;
+  border-color: #d6473f;
+  color: #f0b0a8;
+}
+
+/* info */
+.post-content .callout--info {
+  background: #e8f5fa;
+  border-color: #389ac7;
+  color: #1a475a;
+}
+.dark .post-content .callout--info {
+  background: #0f212b;
+  border-color: #389ac7;
+  color: #a8daf0;
+}
+
+/* tip */
+.post-content .callout--tip {
+  background: #eafaf1;
+  border-color: #3aaf6e;
+  color: #1a4d2e;
+}
+.dark .post-content .callout--tip {
+  background: #0f2618;
+  border-color: #3aaf6e;
+  color: #a0e6c0;
+}
+
+/* success */
+.post-content .callout--success {
+  background: #eafaf1;
+  border-color: #3aaf6e;
+  color: #1a4d2e;
+}
+.dark .post-content .callout--success {
+  background: #0f2618;
+  border-color: #3aaf6e;
+  color: #a0e6c0;
+}
+
+/* question */
+.post-content .callout--question {
+  background: #f5f0ff;
+  border-color: #8247d1;
+  color: #331a5e;
+}
+.dark .post-content .callout--question {
+  background: #1a1030;
+  border-color: #8247d1;
+  color: #c8b0f5;
+}
+
+/* bug / failure */
+.post-content .callout--bug,
+.post-content .callout--failure {
+  background: #fff1f0;
+  border-color: #d6473f;
+  color: #631c1a;
+}
+.dark .post-content .callout--bug,
+.dark .post-content .callout--failure {
+  background: #2a1110;
+  border-color: #d6473f;
+  color: #f0b0a8;
+}
+
+/* quote */
+.post-content .callout--quote {
+  background: #f8f7f4;
+  border-color: #a0978a;
+  color: #3d3830;
+}
+.dark .post-content .callout--quote {
+  background: #1c1a17;
+  border-color: #a0978a;
+  color: #d4cec3;
+}
+
+/* example */
+.post-content .callout--example {
+  background: #f2f0fc;
+  border-color: #7b6dd4;
+  color: #2e2566;
+}
+.dark .post-content .callout--example {
+  background: #17142b;
+  border-color: #7b6dd4;
+  color: #c4bcf5;
+}
+
+/* todo */
+.post-content .callout--todo {
+  background: #eef4ff;
+  border-color: #4782d6;
+  color: #1e3b63;
+}
+.dark .post-content .callout--todo {
+  background: #111d32;
+  border-color: #4782d6;
+  color: #bdd2f0;
+}
+
+/* abstract */
+.post-content .callout--abstract {
+  background: #f2f0fc;
+  border-color: #7b6dd4;
+  color: #2e2566;
+}
+.dark .post-content .callout--abstract {
+  background: #17142b;
+  border-color: #7b6dd4;
+  color: #c4bcf5;
+}
+
 .post-content code {
   background: var(--card-border);
   padding: 0.15rem 0.4rem;
