@@ -73,6 +73,9 @@ model Comment {
   id        String        @id @default(cuid())
   postId    String
   post      Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  parentId  String? // 回复某条评论时指向父评论，顶级评论为 null
+  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Comment[]     @relation("CommentReplies")
   nickname  String
   content   String
   status    CommentStatus @default(VISIBLE)
@@ -80,6 +83,7 @@ model Comment {
   ip        String? // 用于简单防刷（限流）
 
   @@index([postId, status, createdAt])
+  @@index([parentId])
 }
 
 model Question {
