@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Netlify/通用 serverless 环境需要把 pg 标为外部包，避免打包问题
-  serverExternalPackages: ["pg"],
+  // @neondatabase/serverless 包含 WebSocket 原生模块，不能被 Next.js 打包
+  serverExternalPackages: ["@neondatabase/serverless"],
   env: {
     DATABASE_URL: process.env.DATABASE_URL,
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,

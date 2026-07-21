@@ -2,6 +2,8 @@ import { getPublishedQuestions } from "@/lib/questions";
 import AskForm from "@/app/components/AskForm";
 import { formatDateTime } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export default async function AskPage() {
   const questions = await getPublishedQuestions();
 

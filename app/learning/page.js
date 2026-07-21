@@ -1,5 +1,7 @@
 import SectionListPage from "@/app/components/SectionListPage";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "学习与输入",
 };

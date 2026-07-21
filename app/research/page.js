@@ -1,6 +1,8 @@
 import { getAllResearch } from "@/lib/research";
 import { formatDate } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Research",
   description: "学术论文记录",
