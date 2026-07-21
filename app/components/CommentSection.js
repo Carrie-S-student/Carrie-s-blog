@@ -1,11 +1,11 @@
 "use client";
 
 import { useActionState, useRef, useEffect, useState } from "react";
-import { useFormStatus } from "react-dom";
-import { submitComment, submitReply } from "@/app/actions/comments";
+import { submitComment } from "@/app/actions/comments";
+import ReplyForm from "@/app/components/ReplyForm";
 import { formatDateTime } from "@/lib/utils";
 
-const MAX_NEST_DEPTH = 6; // 最大嵌套深度，超过后不再展示回复按钮
+const MAX_NEST_DEPTH = 6;
 
 function countRecursive(comments) {
   let n = 0;
@@ -50,7 +50,6 @@ function CommentItem({
             {comment.content}
           </p>
 
-          {/* 回复按钮 — 超过最大深度时隐藏 */}
           {!tooDeep && (
             <button
               onClick={() =>
@@ -62,45 +61,17 @@ function CommentItem({
             </button>
           )}
 
-          {/* 内联回复表单 */}
           {replyTarget === comment.id && (
-            <form
-              action={submitReply.bind(null, comment.id)}
-              className="mt-2 space-y-1.5"
-            >
-              <input type="hidden" name="postId" value={postId} />
-              <input type="hidden" name="postPath" value={postPath} />
-              <input
-                name="nickname"
-                placeholder="昵称"
-                required
-                maxLength={30}
-                className="w-full rounded border border-card-border bg-card px-2 py-1 text-xs text-foreground outline-none focus:border-accent sm:w-48"
-              />
-              <textarea
-                name="content"
-                placeholder="写下你的回复…"
-                required
-                maxLength={1000}
-                rows={2}
-                className="w-full rounded border border-card-border bg-card px-2 py-1 text-xs text-foreground outline-none focus:border-accent"
-              />
-              <div className="flex items-center gap-2">
-                <SubmitReplyButton />
-                <button
-                  type="button"
-                  onClick={() => setReplyTarget(null)}
-                  className="text-xs text-muted underline transition hover:text-foreground"
-                >
-                  取消
-                </button>
-              </div>
-            </form>
+            <ReplyForm
+              parentId={comment.id}
+              postId={postId}
+              postPath={postPath}
+              onCancel={() => setReplyTarget(null)}
+            />
           )}
         </div>
       )}
 
-      {/* 顶级评论：展示完整卡片 */}
       {depth === 0 && (
         <>
           <div className="flex items-center justify-between">
@@ -115,7 +86,6 @@ function CommentItem({
             {comment.content}
           </p>
 
-          {/* 回复按钮 */}
           {!tooDeep && (
             <button
               onClick={() =>
@@ -127,45 +97,17 @@ function CommentItem({
             </button>
           )}
 
-          {/* 内联回复表单 */}
           {replyTarget === comment.id && (
-            <form
-              action={submitReply.bind(null, comment.id)}
-              className="mt-2 space-y-2"
-            >
-              <input type="hidden" name="postId" value={postId} />
-              <input type="hidden" name="postPath" value={postPath} />
-              <input
-                name="nickname"
-                placeholder="昵称"
-                required
-                maxLength={30}
-                className="w-full rounded border border-card-border bg-card px-2 py-1 text-xs text-foreground outline-none focus:border-accent sm:w-48"
-              />
-              <textarea
-                name="content"
-                placeholder="写下你的回复…"
-                required
-                maxLength={1000}
-                rows={3}
-                className="w-full rounded border border-card-border bg-card px-2 py-1 text-xs text-foreground outline-none focus:border-accent"
-              />
-              <div className="flex items-center gap-2">
-                <SubmitReplyButton />
-                <button
-                  type="button"
-                  onClick={() => setReplyTarget(null)}
-                  className="text-xs text-muted underline transition hover:text-foreground"
-                >
-                  取消
-                </button>
-              </div>
-            </form>
+            <ReplyForm
+              parentId={comment.id}
+              postId={postId}
+              postPath={postPath}
+              onCancel={() => setReplyTarget(null)}
+            />
           )}
         </>
       )}
 
-      {/* 递归渲染子回复 */}
       {comment.children && comment.children.length > 0 && (
         <div className={depth === 0 ? "mt-3 ml-4 space-y-3" : "mt-2 ml-4 space-y-2"}>
           {comment.children.map((child) => (
@@ -185,26 +127,10 @@ function CommentItem({
   );
 }
 
-/**
- * 提交回复的按钮（需要用 useActionState 处理 pending 状态）。
- */
-function SubmitReplyButton() {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="interactive rounded-full bg-foreground px-4 py-1.5 text-xs font-medium text-background transition disabled:opacity-60"
-    >
-      {pending ? "提交中…" : "提交回复"}
-    </button>
-  );
-}
-
 export default function CommentSection({ postId, postPath, comments }) {
   const formRef = useRef(null);
   const [state, formAction, pending] = useActionState(submitComment, undefined);
-  const [replyTarget, setReplyTarget] = useState(null); // 当前展开回复框的评论 id
+  const [replyTarget, setReplyTarget] = useState(null);
   const total = countRecursive(comments);
 
   useEffect(() => {
@@ -236,7 +162,6 @@ export default function CommentSection({ postId, postPath, comments }) {
         ))}
       </div>
 
-      {/* 顶级评论表单 */}
       <form ref={formRef} action={formAction} className="mt-8 space-y-3">
         <input type="hidden" name="postId" value={postId} />
         <input type="hidden" name="postPath" value={postPath} />
