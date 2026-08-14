@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { createSessionToken, SESSION_COOKIE_NAME, SESSION_DURATION_SECONDS } from "@/lib/session";
+import { createSessionToken, SESSION_COOKIE_NAME, ADMIN_SESSION_DURATION_SECONDS } from "@/lib/session";
 
 /**
  * 后台登录：只有一个全站密码（存在环境变量 ADMIN_PASSWORD 里），
@@ -32,7 +32,7 @@ export async function login(prevState, formData) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_DURATION_SECONDS,
+    maxAge: ADMIN_SESSION_DURATION_SECONDS,
   });
 
   redirect(from);

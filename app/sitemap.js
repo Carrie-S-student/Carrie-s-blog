@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://your-domain.vercel.app";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://your-domain.com";
 
 export default async function sitemap() {
   // 静态页面

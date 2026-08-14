@@ -14,6 +14,7 @@ export default function PostCard({ post }) {
             alt={post.title}
             fill
             sizes="(min-width: 768px) 33vw, 100vw"
+            unoptimized
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (

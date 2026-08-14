@@ -3,16 +3,25 @@ import sanitizeHtml from "sanitize-html";
 import CommentSection from "@/app/components/CommentSection";
 import TagPill from "@/app/components/TagPill";
 import PostContentRenderer from "@/app/components/PostContentRenderer";
-import TableOfContents from "@/app/components/TableOfContents";
+import PostArticleLayout from "@/app/components/PostArticleLayout";
 import { getPublishedPostBySlug } from "@/lib/posts";
 import { getVisibleCommentsForPost } from "@/lib/comments";
 import { formatDate } from "@/lib/utils";
+import { verifySession } from "@/lib/dal";
+import { recordPostView } from "@/lib/postviews";
 
 export default async function PostDetailPage({ section, basePath, slug }) {
   const post = await getPublishedPostBySlug(slug);
   if (!post || post.section !== section) {
     notFound();
   }
+
+  // 记录一次访问（每次刷新都会触发）：访客记录其 id，管理员记录为空
+  const session = await verifySession();
+  await recordPostView({
+    postId: post.id,
+    visitorId: session?.type === "visitor" ? session.visitorId : null,
+  });
 
   const comments = await getVisibleCommentsForPost(post.id);
 
@@ -124,6 +133,9 @@ export default async function PostDetailPage({ section, basePath, slug }) {
     allowedIframeHostnames: ["www.youtube.com", "player.bilibili.com"],
   });
 
+  // 正文是否包含标题（h1-h6）：有则显示目录栏，无则正文居中
+  const hasToc = /<h[1-6][\s>]/i.test(safeHtml);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       {/* 顶部：标题 + 元信息 */}
@@ -144,25 +156,15 @@ export default async function PostDetailPage({ section, basePath, slug }) {
         )}
       </div>
 
-      {/* 正文区域：左侧大纲 + 右侧文章 */}
-      <div className="mt-8 flex gap-10">
-        {/* 左侧：交互式文档大纲（桌面端固定定位） */}
-        <aside className="hidden lg:block w-56 shrink-0">
-          <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2">
-            <TableOfContents contentSelector=".post-content" />
-          </div>
-        </aside>
-
-        {/* 右侧：文章正文 */}
-        <article className="min-w-0 flex-1">
-          <PostContentRenderer html={safeHtml} />
-          <CommentSection
-            postId={post.id}
-            postPath={`${basePath}/${slug}`}
-            comments={comments}
-          />
-        </article>
-      </div>
+      {/* 正文区域：有标题时左侧目录栏（可收起），隐藏或无标题时正文居中 */}
+      <PostArticleLayout hasToc={hasToc}>
+        <PostContentRenderer html={safeHtml} />
+        <CommentSection
+          postId={post.id}
+          postPath={`${basePath}/${slug}`}
+          comments={comments}
+        />
+      </PostArticleLayout>
     </div>
   );
 }

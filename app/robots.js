@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://your-domain.vercel.app";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://your-domain.com";
 
 export default function robots() {
   return {

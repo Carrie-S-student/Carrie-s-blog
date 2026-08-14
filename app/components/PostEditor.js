@@ -178,18 +178,15 @@ export default function PostEditor({
         >
           删除线
         </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("heading", { level: 2 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        >
-          标题 2
-        </ToolbarButton>
-        <ToolbarButton
-          active={editor.isActive("heading", { level: 3 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        >
-          标题 3
-        </ToolbarButton>
+        {[1, 2, 3, 4, 5, 6].map((level) => (
+          <ToolbarButton
+            key={`heading-${level}`}
+            active={editor.isActive("heading", { level })}
+            onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
+          >
+            标题 {level}
+          </ToolbarButton>
+        ))}
         <ToolbarButton
           active={editor.isActive("bulletList")}
           onClick={() => editor.chain().focus().toggleBulletList().run()}

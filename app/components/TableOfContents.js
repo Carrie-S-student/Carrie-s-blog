@@ -5,16 +5,18 @@ import { useState, useEffect, useCallback, useRef } from "react";
 /**
  * 交互式文档大纲（Table of Contents）
  *
- * 从页面 DOM 中提取 h1/h2/h3 标题，生成可点击的导航列表。
+ * 从页面 DOM 中提取 h1-h6 标题，生成可点击的导航列表。
  * 支持：
  * - 平滑滚动到对应标题
  * - 高亮当前阅读位置（IntersectionObserver）
- * - 移动端折叠/展开
+ * - 点击「收起」隐藏整个目录栏（由父级控制显隐，onHide 回调）
  */
-export default function TableOfContents({ contentSelector = ".post-content" }) {
+export default function TableOfContents({
+  contentSelector = ".post-content",
+  onHide,
+}) {
   const [headings, setHeadings] = useState([]);
   const [activeId, setActiveId] = useState(null);
-  const [collapsed, setCollapsed] = useState(false);
   const observerRef = useRef(null);
 
   // 提取页面中的标题元素
@@ -22,7 +24,7 @@ export default function TableOfContents({ contentSelector = ".post-content" }) {
     const container = document.querySelector(contentSelector);
     if (!container) return;
 
-    const headingElements = container.querySelectorAll("h1, h2, h3");
+    const headingElements = container.querySelectorAll("h1, h2, h3, h4, h5, h6");
     const items = [];
     let counter = 0;
 
@@ -114,20 +116,19 @@ export default function TableOfContents({ contentSelector = ".post-content" }) {
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
           目录
         </h2>
-        <button
-          onClick={() => setCollapsed((v) => !v)}
-          className="text-xs text-muted hover:text-foreground transition md:hidden"
-          aria-label={collapsed ? "展开目录" : "收起目录"}
-        >
-          {collapsed ? "展开" : "收起"}
-        </button>
+        {onHide && (
+          <button
+            type="button"
+            onClick={onHide}
+            className="text-xs text-muted hover:text-foreground transition"
+            aria-label="隐藏目录"
+          >
+            收起
+          </button>
+        )}
       </div>
 
-      <ul
-        className={`toc__list space-y-1 ${
-          collapsed ? "hidden md:block" : "block"
-        }`}
-      >
+      <ul className="toc__list space-y-1">
         {headings.map(({ id, text, level }) => (
           <li key={id}>
             <button

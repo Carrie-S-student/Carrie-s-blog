@@ -65,7 +65,7 @@
 
 没有放照片之前，首页会显示默认渐变背景，关于我页面会显示占位提示，不影响其他功能。
 
-## 三、正式部署上线（推荐：Vercel + Neon + Vercel Blob，都有免费额度）
+## 三、正式部署上线（Vercel + Netlify 双平台，共用数据库和云存储）
 
 ### 1. 准备一个数据库（Neon）
 
@@ -95,7 +95,23 @@
 3. 创建后 Vercel 会自动帮你把 `BLOB_READ_WRITE_TOKEN` 加进项目的环境变量里；如果没有自动添加，就手动复制粘贴到项目设置的环境变量里。
 4. 回到 Deployments 标签，找到最新一次部署，点右上角菜单选择 "Redeploy" 让新的环境变量生效。
 
-### 5. 同步数据库结构到线上数据库
+### 5. 在 Netlify 部署（同步镜像站）
+
+同一个博客可以同时在 Netlify 也部署一份：两个站点共用同一个 Neon 数据库和 Vercel Blob 存储，文章、评论、访问统计完全同步，一个站点出问题时另一个还能访问。
+
+1. 去 https://www.netlify.com 用 GitHub 账号登录。
+2. 点 "Add new site" → "Import an existing project"，选择同一个仓库，点 Deploy。
+3. Netlify 会自动识别 Next.js 框架，不需要改构建设置（Build command 保持 `npm run build`，Publish directory 留空自动识别）。
+4. 部署前先在 Netlify 的环境变量（Site configuration → Environment variables）里填好以下几项，值基本和 Vercel 一样：
+   - `NEXT_PUBLIC_SITE_URL`：Netlify 分配的网址，例如 `https://my-blog.netlify.app`
+   - `DATABASE_URL`：同一个 Neon 连接串（和 Vercel 填的一样，去掉 `channel_binding` 参数）
+   - `ADMIN_PASSWORD`：同一个后台密码
+   - `SESSION_SECRET`：同一个随机字符串
+   - `BLOB_READ_WRITE_TOKEN`：Vercel Blob 的同一个令牌（这样 Netlify 上的图片/视频上传功能也能正常用）
+5. 点 "Deploy my-blog"，等构建完成即可访问。
+6. 想用自定义域名的话，在 Netlify 控制台的 "Domain management" 里绑定即可。
+
+### 6. 同步数据库结构到线上数据库
 
 在你自己电脑的项目文件夹里，临时把 `.env` 里的 `DATABASE_URL` 换成 Neon 的线上连接串，然后运行：
 

@@ -3,6 +3,72 @@
 import { useActionState, useState, useCallback } from "react";
 import PostEditor from "@/app/components/PostEditor";
 import TagPill from "@/app/components/TagPill";
+import Image from "next/image";
+
+/** 封面图上传组件：直接上传到 Vercel Blob，上传后显示预览 */
+function CoverImageUploader({ defaultUrl, onChange }) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [url, setUrl] = useState(defaultUrl || "");
+
+  async function handleFileChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadError("");
+    setUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "上传失败，请重试。");
+      }
+
+      setUrl(data.url);
+      onChange(data.url);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "上传失败");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="w-full rounded-lg border border-card-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-accent file:mr-3 file:rounded-md file:border-0 file:bg-accent file:px-3 file:py-1 file:text-sm file:text-white"
+      />
+      {uploadError && <p className="mt-1 text-sm text-red-500">{uploadError}</p>}
+      {uploading && <p className="mt-1 text-sm text-muted">上传中，请稍候…</p>}
+      {url && (
+        <div className="mt-2">
+          <p className="text-xs text-muted mb-1">封面图预览：</p>
+          <div className="relative h-40 w-full overflow-hidden rounded-lg bg-card-border">
+            <Image
+              src={url}
+              alt="封面图预览"
+              fill
+              sizes="100vw"
+              unoptimized
+              className="object-contain"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const SECTION_OPTIONS = [
   { value: "LEARNING", label: "学习与输入" },
@@ -131,13 +197,23 @@ export default function PostForm({ action, post, availableTags = [] }) {
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-foreground">封面图链接（选填）</label>
+        <label className="mb-1 block text-sm font-medium text-foreground">封面图（选填）</label>
+        <CoverImageUploader
+          defaultUrl={post?.coverImage || ""}
+          onChange={(url) => {
+            const input = document.getElementById("coverImageInput");
+            if (input) input.value = url;
+          }}
+        />
         <input
+          id="coverImageInput"
+          type="hidden"
           name="coverImage"
           defaultValue={post?.coverImage || ""}
-          placeholder="在正文里上传图片后，把图片地址粘贴到这里作为封面"
-          className="w-full rounded-lg border border-card-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
         />
+        <p className="mt-1 text-xs text-muted">
+          直接点击文件选择按钮上传图片到云存储。上传后如需更换，重新上传即可。
+        </p>
       </div>
 
       <div>

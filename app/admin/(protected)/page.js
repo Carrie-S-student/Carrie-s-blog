@@ -2,25 +2,35 @@ import Link from "next/link";
 import { getAllPostsForAdmin } from "@/lib/posts";
 import { getAllCommentsForAdmin } from "@/lib/comments";
 import { getAllQuestionsForAdmin } from "@/lib/questions";
+import { getAllVisitors, getUnreadLogCount } from "@/lib/visitors";
+import { getPostViewStats } from "@/lib/postviews";
 
 export const metadata = {
   title: "概览",
 };
 
 export default async function AdminHomePage() {
-  const [posts, comments, questions] = await Promise.all([
-    getAllPostsForAdmin(),
-    getAllCommentsForAdmin(),
-    getAllQuestionsForAdmin(),
-  ]);
+  const [posts, comments, questions, visitors, unreadLogs, viewStats] =
+    await Promise.all([
+      getAllPostsForAdmin(),
+      getAllCommentsForAdmin(),
+      getAllQuestionsForAdmin(),
+      getAllVisitors(),
+      getUnreadLogCount(),
+      getPostViewStats(),
+    ]);
 
   const publishedCount = posts.filter((p) => p.published).length;
   const pendingQuestions = questions.filter((q) => q.status === "PENDING").length;
+  const totalViews = viewStats.reduce((sum, s) => sum + s.viewCount, 0);
 
   const cards = [
     { href: "/admin/posts", label: "文章", value: `${publishedCount} / ${posts.length} 已发布` },
     { href: "/admin/comments", label: "评论", value: `共 ${comments.length} 条` },
     { href: "/admin/questions", label: "提问箱", value: `${pendingQuestions} 条待审核` },
+    { href: "/admin/visitors", label: "访问用户", value: `共 ${visitors.length} 位` },
+    { href: "/admin/notifications", label: "通知中心", value: `${unreadLogs} 条未读` },
+    { href: "/admin/stats", label: "总访问量", value: `${totalViews} 次` },
   ];
 
   return (
@@ -29,7 +39,7 @@ export default async function AdminHomePage() {
         欢迎回来
       </h1>
       <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-        从左侧菜单选择要管理的内容：文章、评论或提问箱。
+        从左侧菜单选择要管理的内容：文章、评论、提问箱、访客或统计。
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-3">

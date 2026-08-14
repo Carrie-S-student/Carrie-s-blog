@@ -42,8 +42,67 @@ model Post {
 
   comments Comment[]
   tags     PostTag[]
+  views    PostView[]
 
   @@index([section, published, publishedAt])
+}
+
+// 访客用户：博客门禁系统。name（初始用户名）锁定，displayName（当前显示名）可自行修改。
+model Visitor {
+  id          String   @id @default(cuid())
+  name        String   @unique // 初始用户名：后台添加时填写，锁定不变（后台列表始终显示它）
+  displayName String   @default("") // 当前显示名：首页"欢迎 xxx"用，访客可自行修改
+  password    String   @unique // 密码：初始为"我是优秀的" + name，访客最多可自行修改 3 次
+  changeCount Int      @default(0) // 已修改密码次数，达到上限后不能再改
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  views       PostView[]
+  changes     PasswordChangeLog[]
+  nameChanges NameChangeLog[]
+
+  @@index([createdAt])
+}
+
+// 改名记录：访客修改显示名时写入，通知中心展示
+model NameChangeLog {
+  id        String   @id @default(cuid())
+  visitorId String
+  visitor   Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  oldName   String // 旧显示名
+  newName   String // 新显示名
+  read      Boolean  @default(false) // 后台是否已读
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([read])
+}
+
+// 文章访问明细：每次刷新文章页记一条
+model PostView {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  visitorId String? // 访客登录时记录其 id；管理员访问时为 null
+  visitor   Visitor? @relation(fields: [visitorId], references: [id], onDelete: SetNull)
+  viewedAt  DateTime @default(now())
+
+  @@index([postId, viewedAt])
+  @@index([visitorId, viewedAt])
+}
+
+// 密码修改记录：同时作为后台"通知中心"的数据来源
+model PasswordChangeLog {
+  id          String   @id @default(cuid())
+  visitorId   String
+  visitor     Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  oldPassword String // 明文记录旧密码
+  newPassword String // 明文记录新密码
+  read        Boolean  @default(false) // 后台是否已读
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([read])
 }
 
 // 标签：相当于每个栏目页下的"文件夹"，对文章进行分类

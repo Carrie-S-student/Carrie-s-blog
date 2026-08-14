@@ -1,7 +1,7 @@
 import { getAdminSettings } from "@/lib/settings";
 import Image from "next/image";
 
-export default async function Hero() {
+export default async function Hero({ visitorName }) {
   const settings = await getAdminSettings();
   const heroImage = settings?.heroImage || null;
   const heroTitle = settings?.heroTitle || "Welcome to my blog";
@@ -18,6 +18,11 @@ export default async function Hero() {
 
       {/* 文字区域：全屏居中，留出导航栏和底部按钮的空间 */}
       <div className="relative z-10 mx-auto flex h-full max-w-5xl flex-col items-center justify-center px-4 pt-20 pb-28 text-center text-white sm:px-6">
+        {visitorName && (
+          <h2 className="mb-4 text-5xl font-semibold leading-tight sm:text-6xl">
+            欢迎{visitorName}
+          </h2>
+        )}
         <h1 className="text-5xl font-semibold leading-tight sm:text-6xl">
           {heroTitle}
         </h1>
