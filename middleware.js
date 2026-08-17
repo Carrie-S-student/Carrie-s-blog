@@ -2,9 +2,8 @@ import { NextResponse } from "next/server";
 import { verifySessionToken, SESSION_COOKIE_NAME } from "@/lib/session";
 
 /**
- * 门禁策略：
- * - 首页 / 公开：未登录也能直接浏览文章列表
- * - 其他前台页面（文章详情 / 分类 / 关于等）：未登录 → 重定向到 /gate（你是谁呀？）
+ * 全站门禁：
+ * - 未登录（无访客/管理员会话）访问任何前台页面 → 重定向到 /gate（你是谁呀？）
  * - /gate 页：已登录则直接进首页
  * - 后台 /admin：只允许管理员访问，否则去 /admin/login
  * - /api：放行，由各接口内部自行鉴权（后台接口已有 requireAdmin 校验）
@@ -44,11 +43,6 @@ export async function middleware(request) {
     if (isAdmin || isVisitor) {
       return NextResponse.redirect(new URL("/", request.url));
     }
-    return NextResponse.next();
-  }
-
-  // 首页公开：未登录也能直接浏览文章列表，点开文章时才需要验证
-  if (pathname === "/") {
     return NextResponse.next();
   }
 
