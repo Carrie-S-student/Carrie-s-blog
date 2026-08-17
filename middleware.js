@@ -11,6 +11,11 @@ import { verifySessionToken, SESSION_COOKIE_NAME } from "@/lib/session";
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
+  // 公开静态文件直接放行（robots.txt / sitemap.xml / 微信验证 .txt / favicon.ico / 图片等）
+  if (/\.\w+$/.test(pathname)) {
+    return NextResponse.next();
+  }
+
   // 内部资源直接放行
   if (pathname.startsWith("/_next")) {
     return NextResponse.next();
