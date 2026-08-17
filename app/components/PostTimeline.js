@@ -1,11 +1,23 @@
 import Link from "next/link";
 import TagPill from "@/app/components/TagPill";
-import { formatDate, SECTION_LABELS, SECTION_HREF } from "@/lib/utils";
+import { SECTION_LABELS, SECTION_HREF } from "@/lib/utils";
+
+// 用北京时间取年月日，避免服务端（UTC）与本地时区不一致导致日期偏移
+function compactDateParts(date) {
+  const parts = new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "Asia/Shanghai",
+  }).formatToParts(new Date(date));
+  const get = (type) => parts.find((p) => p.type === type)?.value ?? "";
+  return { year: get("year"), month: get("month"), day: get("day") };
+}
 
 function formatCompactDate(date) {
   if (!date) return "";
-  const d = new Date(date);
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  const { year, month, day } = compactDateParts(date);
+  return `${year}.${month}.${day}`;
 }
 
 function TimelineCard({ post }) {
@@ -61,7 +73,7 @@ export default function PostTimeline({ posts }) {
 
   const groups = Object.entries(
     posts.reduce((acc, post) => {
-      const year = new Date(post.publishedAt).getFullYear();
+      const year = compactDateParts(post.publishedAt).year;
       if (!acc[year]) acc[year] = [];
       acc[year].push(post);
       return acc;
