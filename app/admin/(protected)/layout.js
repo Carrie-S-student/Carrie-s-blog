@@ -15,9 +15,9 @@ const NAV_ITEMS = [
   { href: "/admin/tags", label: "标签管理" },
   { href: "/admin/comments", label: "评论管理" },
   { href: "/admin/questions", label: "提问箱" },
+  { href: "/admin/notes", label: "留言墙" },
   { href: "/admin/research", label: "Research" },
   { href: "/admin/visitors", label: "访问用户" },
-  { href: "/admin/notifications", label: "通知中心" },
   { href: "/admin/stats", label: "访问统计" },
   { href: "/admin/settings", label: "站点设置" },
 ];

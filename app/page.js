@@ -1,21 +1,16 @@
 import Hero from "@/app/components/Hero";
 import PostTimeline from "@/app/components/PostTimeline";
 import HomeActionCards from "@/app/components/HomeActionCards";
-import ChangePasswordForm from "@/app/components/ChangePasswordForm";
 import { getLatestPosts } from "@/lib/posts";
-import { getCurrentVisitor } from "@/lib/dal";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [posts, visitor] = await Promise.all([
-    getLatestPosts(6),
-    getCurrentVisitor(),
-  ]);
+  const posts = await getLatestPosts(6);
 
   return (
     <div>
-      <Hero visitorName={visitor?.displayName || visitor?.name} />
+      <Hero />
 
       <section id="latest-posts" className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
@@ -38,13 +33,6 @@ export default async function Home() {
           </aside>
         </div>
       </section>
-
-      {/* 底部：访客修改密码（登录后可见） */}
-      {visitor && (
-        <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
-          <ChangePasswordForm visitor={visitor} />
-        </section>
-      )}
     </div>
   );
 }

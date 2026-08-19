@@ -27,6 +27,12 @@ enum QuestionStatus {
   REJECTED // 审核后不公开
 }
 
+enum NoteStatus {
+  PENDING // 待审核
+  PUBLISHED // 已审核并公开
+  REJECTED // 审核后不公开
+}
+
 model Post {
   id        String   @id @default(cuid())
   slug      String   @unique
@@ -47,35 +53,19 @@ model Post {
   @@index([section, published, publishedAt])
 }
 
-// 访客用户：博客门禁系统。name（初始用户名）锁定，displayName（当前显示名）可自行修改。
+// 访客用户：博客门禁系统。name（初始用户名）锁定，displayName（昵称）可后台设置，默认为用户名。
 model Visitor {
   id          String   @id @default(cuid())
   name        String   @unique // 初始用户名：后台添加时填写，锁定不变（后台列表始终显示它）
-  displayName String   @default("") // 当前显示名：首页"欢迎 xxx"用，访客可自行修改
-  password    String   @unique // 密码：初始为"我是优秀的" + name，访客最多可自行修改 3 次
-  changeCount Int      @default(0) // 已修改密码次数，达到上限后不能再改
+  displayName String   @default("") // 昵称：留空默认等于用户名
+  password    String   @unique // 密码：初始为"我是优秀的" + name，由后台管理
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  views       PostView[]
-  changes     PasswordChangeLog[]
-  nameChanges NameChangeLog[]
+  views PostView[]
+  notes Note[]
 
   @@index([createdAt])
-}
-
-// 改名记录：访客修改显示名时写入，通知中心展示
-model NameChangeLog {
-  id        String   @id @default(cuid())
-  visitorId String
-  visitor   Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
-  oldName   String // 旧显示名
-  newName   String // 新显示名
-  read      Boolean  @default(false) // 后台是否已读
-  createdAt DateTime @default(now())
-
-  @@index([createdAt])
-  @@index([read])
 }
 
 // 文章访问明细：每次刷新文章页记一条
@@ -89,20 +79,6 @@ model PostView {
 
   @@index([postId, viewedAt])
   @@index([visitorId, viewedAt])
-}
-
-// 密码修改记录：同时作为后台"通知中心"的数据来源
-model PasswordChangeLog {
-  id          String   @id @default(cuid())
-  visitorId   String
-  visitor     Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
-  oldPassword String // 明文记录旧密码
-  newPassword String // 明文记录新密码
-  read        Boolean  @default(false) // 后台是否已读
-  createdAt   DateTime @default(now())
-
-  @@index([createdAt])
-  @@index([read])
 }
 
 // 标签：相当于每个栏目页下的"文件夹"，对文章进行分类
@@ -156,6 +132,42 @@ model Question {
   ip          String?
 
   @@index([status, createdAt])
+}
+
+// 留言墙纸条：访客或博主添加。authorType 区分来源（VISITOR/ADMIN），
+// 博主添加的纸条前台显示时带加粗边框标记。
+model Note {
+  id         String     @id @default(cuid())
+  authorType String // "VISITOR" 或 "ADMIN"
+  visitorId  String?
+  visitor    Visitor?   @relation(fields: [visitorId], references: [id], onDelete: SetNull)
+  nickname   String? // 可匿名
+  content    String // 几句话的感悟，≤ 200 字
+  color      String // 淡色系配色 key（pink/yellow/green/blue/purple/orange/mint）
+  shape      String // rectangle / square / circle
+  posX       Float? // 墙上的水平位置（百分比 0-100）
+  posY       Float? // 墙上的垂直位置（百分比 0-100）
+  status     NoteStatus @default(PENDING)
+  likes      Int        @default(0) // 点赞数（冗余计数，与 NoteLike 记录保持一致）
+  createdAt  DateTime   @default(now())
+  ip         String? // 用于简单防刷（限流）
+
+  likesLog NoteLike[]
+
+  @@index([status, createdAt])
+  @@index([visitorId])
+}
+
+// 留言墙点赞记录：同一 IP 对同一张纸条只能赞一次（点赞/取消点赞都记录在此去重）
+model NoteLike {
+  id        String   @id @default(cuid())
+  noteId    String
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  ip        String
+  createdAt DateTime @default(now())
+
+  @@unique([noteId, ip])
+  @@index([noteId])
 }
 
 model Research {

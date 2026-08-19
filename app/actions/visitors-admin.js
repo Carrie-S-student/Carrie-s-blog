@@ -8,8 +8,6 @@ import {
   updateVisitor,
   getVisitorById,
   deleteVisitor,
-  markLogRead,
-  markAllLogsRead,
 } from "@/lib/visitors";
 
 const MAX_NAME_LENGTH = 30;
@@ -50,8 +48,8 @@ export async function addVisitorAction(prevState, formData) {
 }
 
 /**
- * 后台：编辑访客用户。初始用户名锁定不变，可改密码和昵称（首页显示名）。
- * 昵称留空则恢复为初始用户名。
+ * 后台：编辑访客用户。初始用户名锁定不变，可改密码和昵称。
+ * 昵称留空则默认用初始用户名。
  */
 export async function updateVisitorAction(id, prevState, formData) {
   await requireAdmin();
@@ -87,22 +85,4 @@ export async function deleteVisitorAction(id) {
   await requireAdmin();
   await deleteVisitor(id);
   revalidatePath("/admin/visitors");
-}
-
-/**
- * 后台：将单条通知标记为已读（type: "password" | "name"）。
- */
-export async function markLogReadAction(type, id) {
-  await requireAdmin();
-  await markLogRead(type, id);
-  revalidatePath("/admin/notifications");
-}
-
-/**
- * 后台：将全部通知标记为已读。
- */
-export async function markAllLogsReadAction() {
-  await requireAdmin();
-  await markAllLogsRead();
-  revalidatePath("/admin/notifications");
 }

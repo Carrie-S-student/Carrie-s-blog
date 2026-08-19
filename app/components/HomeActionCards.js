@@ -86,6 +86,49 @@ export default function HomeActionCards() {
           </svg>
         </span>
       </Link>
+
+      {/* 留言墙 */}
+      <Link
+        href="/wall"
+        className="group card flex flex-col p-6 transition interactive hover:border-accent/50"
+      >
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400">
+          <svg
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.5 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"
+            />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 3v6h6" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-foreground">留言墙</h3>
+        <p className="mt-2 text-sm leading-relaxed text-muted">
+          突然冒出来的想法、几句感悟，随手写下来贴到墙上，和大家分享。
+        </p>
+        <span className="mt-4 inline-flex items-center text-sm font-medium text-accent">
+          去贴纸条
+          <svg
+            className="ml-1 h-4 w-4 transition group-hover:translate-x-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </span>
+      </Link>
     </div>
   );
 }

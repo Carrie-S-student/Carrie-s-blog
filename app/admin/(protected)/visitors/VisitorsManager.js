@@ -6,7 +6,7 @@ import {
   updateVisitorAction,
   deleteVisitorAction,
 } from "@/app/actions/visitors-admin";
-import { formatDateTime, MAX_CHANGE_COUNT, generateInitialPassword } from "@/lib/utils";
+import { formatDateTime, generateInitialPassword } from "@/lib/utils";
 
 const inputClass =
   "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100";
@@ -46,7 +46,7 @@ function CreateVisitorForm() {
       </div>
       <div>
         <label className="mb-1 block text-xs text-neutral-500 dark:text-neutral-400">
-          昵称（首页显示名，可选）
+          昵称（可选，默认等于用户名）
         </label>
         <input
           name="displayName"
@@ -57,7 +57,7 @@ function CreateVisitorForm() {
           placeholder={`不填默认用用户名（${username || "…"}）`}
           className={`${inputClass} w-full sm:w-80`}
         />
-        <p className="mt-1 text-xs text-neutral-400">首页欢迎语用这个昵称，之后可在"编辑"里随时修改。</p>
+        <p className="mt-1 text-xs text-neutral-400">留空就默认用用户名，之后可在"编辑"里随时修改。</p>
       </div>
       <div className="rounded-lg bg-neutral-100 px-3 py-2 text-sm text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
         初始密码：<span className="font-medium text-neutral-900 dark:text-neutral-100">
@@ -101,7 +101,8 @@ function EditVisitorForm({ visitor, onDone }) {
         defaultValue={visitor.displayName || visitor.name}
         maxLength={30}
         type="text"
-        title="首页欢迎语显示的昵称，留空恢复为初始用户名"
+        title="昵称（可选），留空默认用用户名"
+        placeholder="默认用户名"
         className={`${inputClass} w-32`}
       />
       <label className="text-xs text-neutral-400">密码</label>
@@ -140,7 +141,7 @@ export default function VisitorsManager({ visitors }) {
       <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">访问用户</h1>
       <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
         这里维护可以进入博客的访客名单。只需填写用户名，初始密码自动生成（"我是优秀的" + 用户名）。
-        后台始终显示初始用户名；昵称（首页欢迎语显示的名字）由你在这里设置。
+        后台始终显示初始用户名；昵称可选，留空默认等于用户名，可随时修改。
       </p>
 
       {/* 添加访客 */}
@@ -170,7 +171,7 @@ export default function VisitorsManager({ visitors }) {
                     {visitor.name}
                     {visitor.displayName && visitor.displayName !== visitor.name && (
                       <span className="ml-2 text-xs font-normal text-neutral-400">
-                        首页显示：{visitor.displayName}
+                        昵称：{visitor.displayName}
                       </span>
                     )}
                   </span>
@@ -180,9 +181,6 @@ export default function VisitorsManager({ visitors }) {
                       {visitor.password}
                     </span>
                   </div>
-                  <span className="text-xs text-neutral-400">
-                    已改密码 {visitor.changeCount}/{MAX_CHANGE_COUNT} 次
-                  </span>
                   <span className="text-xs text-neutral-400">
                     访问 {visitor._count?.views ?? 0} 次
                   </span>

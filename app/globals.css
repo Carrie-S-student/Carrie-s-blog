@@ -68,8 +68,44 @@ html {
 }
 
 /* ================================================================
-   无障碍：尊重用户系统级减少动画偏好
+   留言墙：便签纸随风飘动
+   ----------------------------------------------------------------
+   外层定位层负责摆放（left/top 百分比），内层 .note-float 负责摆动，
+   两者分离，避免动画 transform 覆盖定位 transform。
 =============================================================== */
+@keyframes note-sway {
+  0%, 100% { transform: rotate(-1.8deg) translateY(0); }
+  25% { transform: rotate(1.1deg) translateY(-3px); }
+  50% { transform: rotate(1.8deg) translateY(-5px); }
+  75% { transform: rotate(-0.9deg) translateY(-2px); }
+}
+
+.note-float {
+  animation: note-sway 4s ease-in-out infinite;
+}
+
+/* 便签纸形状 */
+.note-shape-rectangle {
+  border-radius: 10px;
+}
+
+.note-shape-square {
+  border-radius: 14px;
+}
+
+/* 拖拽中的纸条：置顶、关闭过渡，拖起来跟手 */
+.note-dragging {
+  z-index: 60 !important;
+  transition: none !important;
+  cursor: grabbing !important;
+}
+
+/* 放置模式：整面墙虚化 */
+.wall-blurred {
+  filter: blur(5px) brightness(0.92);
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

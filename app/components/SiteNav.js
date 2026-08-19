@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: "/research", label: "Research" },
   { href: "/about", label: "关于我" },
   { href: "/ask", label: "提问箱" },
+  { href: "/wall", label: "留言墙" },
 ];
 
 export default function SiteNav() {
