@@ -15,7 +15,6 @@ export default function StickyNote({
   x,
   y,
   isOwner,
-  isPending,
   isDragging,
   likes,
   isLiked,
@@ -40,9 +39,7 @@ export default function StickyNote({
   return (
     <div
       data-wall-note
-      className={`absolute select-none ${isDragging ? "note-dragging" : ""} ${
-        isPending ? "opacity-70" : ""
-      }`}
+      className={`absolute select-none ${isDragging ? "note-dragging" : ""}`}
       style={{
         left: `${x}%`,
         top: `${y}%`,
@@ -101,8 +98,7 @@ export default function StickyNote({
             <div className="mt-1 flex items-center justify-between gap-1 text-[10px] opacity-70">
               <span>{formatDate(note.createdAt)}</span>
               <span className="flex items-center gap-1.5">
-                {isPending && <span>待审核</span>}
-                {!isPending && onLike && (
+                {onLike && (
                   <button
                     type="button"
                     onPointerDown={(e) => e.stopPropagation()}

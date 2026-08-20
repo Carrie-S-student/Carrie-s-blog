@@ -2,26 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/dal";
-import { publishNote, rejectNote, deleteNote, createAdminNote } from "@/lib/notes";
+import { deleteNote, createAdminNote } from "@/lib/notes";
 import {
   NOTE_COLOR_KEYS,
   NOTE_SHAPE_KEYS,
   NOTE_MAX_CONTENT,
   NOTE_MAX_NICKNAME,
 } from "@/lib/note-styles";
-
-export async function publishNoteAction(id) {
-  await requireAdmin();
-  await publishNote(id);
-  revalidatePath("/wall");
-  revalidatePath("/admin/notes");
-}
-
-export async function rejectNoteAction(id) {
-  await requireAdmin();
-  await rejectNote(id);
-  revalidatePath("/admin/notes");
-}
 
 export async function deleteNoteAction(id) {
   await requireAdmin();

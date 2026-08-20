@@ -52,7 +52,7 @@ export async function submitNote(prevState, formData) {
     return { success: true, id: note.id };
   }
 
-  // 游客 / 访客：先限流再提交，待审核（留言墙无需密码，人人可写）
+  // 游客 / 访客：先限流再提交，提交后直接公开显示（留言墙无需密码，人人可写）
   if (await isNoteRateLimited(ip)) {
     return { error: "贴得太频繁了，过一会儿再试试。" };
   }
@@ -96,7 +96,7 @@ export async function placeNote(id, posX, posY) {
 
   const note = await prisma.note.findUnique({
     where: { id },
-    select: { id: true, visitorId: true, authorType: true, status: true },
+    select: { id: true, visitorId: true, authorType: true, status: true, createdAt: true },
   });
   if (!note) {
     return { error: "纸条不存在。" };
@@ -106,10 +106,15 @@ export async function placeNote(id, posX, posY) {
 
   const isAdmin = session?.role === "admin";
   const isOwner = session?.type === "visitor" && session.visitorId === note.visitorId;
-  // 未登录游客刚贴的待审核纸条：允许放置位置（待审核纸条只对自己可见）
-  const isAnonymousPending = !session && note.visitorId === null && note.status === "PENDING";
+  // 未登录游客刚贴的纸条（创建后 10 分钟内）：允许放置位置，
+  // 其他访客的纸条（visitorId 为 null）不可被挪动，防止互相移动位置
+  const isRecentAnonymous =
+    !session &&
+    note.visitorId === null &&
+    note.status === "PUBLISHED" &&
+    Date.now() - note.createdAt.getTime() < 10 * 60 * 1000;
 
-  if (!isAdmin && !isOwner && !isAnonymousPending) {
+  if (!isAdmin && !isOwner && !isRecentAnonymous) {
     return { error: session ? "只能移动自己贴的纸条。" : "登录已过期，请重新验证。" };
   }
 
@@ -125,7 +130,7 @@ const ANON_LIKE_COOKIE = "wall-anon-like-id";
  * 点赞纸条。无需登录，人人可赞；同一身份对同一纸条只能赞一次，
  * 重复点击不会取消（点赞数只增不减），不同访客各自 +1。
  * 身份优先用 IP；拿不到 IP（如本地开发）时退回持久 cookie，保证功能可用。
- * 只允许给已审核公开的纸条点赞。
+ * 只允许给已公开的纸条点赞。
  */
 export async function toggleNoteLikeAction(noteId) {
   if (typeof noteId !== "string" || !noteId) {
@@ -136,7 +141,7 @@ export async function toggleNoteLikeAction(noteId) {
     select: { id: true, status: true },
   });
   if (!note || note.status !== "PUBLISHED") {
-    return { error: "纸条不存在或还没通过审核。" };
+    return { error: "纸条不存在。" };
   }
   let ip = await getClientIp();
   // 回环地址（本地开发所有请求都是 ::1/127.0.0.1）无法区分访客，

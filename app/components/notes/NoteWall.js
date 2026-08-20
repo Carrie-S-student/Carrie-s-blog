@@ -77,7 +77,6 @@ export default function NoteWall({ notes, currentVisitorId, isAdmin }) {
 
   // 点赞：每个访客对同一张纸条只能赞一次，重复点击不再取消，点赞数只增不减
   const toggleLike = async (note) => {
-    if (note.status === "PENDING") return;
     const prevLiked = likeState[note.id]?.liked ?? false;
     const prevLikes = likeState[note.id]?.likes ?? note.likes ?? 0;
     if (prevLiked) {
@@ -247,7 +246,7 @@ export default function NoteWall({ notes, currentVisitorId, isAdmin }) {
     return () => el.removeEventListener("wheel", onWheel);
   }, []);
 
-  // 凌乱模式展示的纸条：已公开的最新 WALL_LIMIT 张 + 本地待审核纸条（按 id 去重）
+  // 凌乱模式展示的纸条：已公开的最新 WALL_LIMIT 张 + 本地刚贴的纸条（按 id 去重）
   const wallNotes = useMemo(() => {
     const localIds = new Set(localNotes.map((n) => n.id));
     const published = [...notes]
@@ -319,9 +318,9 @@ export default function NoteWall({ notes, currentVisitorId, isAdmin }) {
 
       const all = [...notes, ...localNotes];
       const note = all.find((n) => n.id === r.id);
-      // 自己的纸条，或游客刚贴的待审核纸条，都可以保存位置
-      const canMove =
-        note && (canEdit(note) || (note.status === "PENDING" && note.visitorId === null));
+      // 自己的纸条，或本地刚贴的纸条（放置位置阶段），都可以保存位置
+      const isLocal = localNotes.some((n) => n.id === note?.id);
+      const canMove = note && (canEdit(note) || isLocal);
       if (canMove) {
         placeNote(r.id, x, y).then((res) => {
           if (!res?.success) showToast(res?.error || "位置保存失败");
@@ -394,7 +393,7 @@ export default function NoteWall({ notes, currentVisitorId, isAdmin }) {
           prev.map((n) => (n.id === placingId ? { ...n, posX: x, posY: y } : n))
         );
         setPlacingId(null);
-        showToast("贴好啦！等博主审核通过，大家就能看到这张纸条");
+        showToast("贴好啦！纸条已经贴到墙上了");
       } else {
         setPlacingId(null);
         showToast(res?.error || "放置失败");
@@ -410,7 +409,7 @@ export default function NoteWall({ notes, currentVisitorId, isAdmin }) {
       {
         ...draft,
         id,
-        status: "PENDING",
+        status: "PUBLISHED",
         authorType: "VISITOR",
         visitorId: currentVisitorId,
         createdAt: new Date().toISOString(),
@@ -513,7 +512,6 @@ export default function NoteWall({ notes, currentVisitorId, isAdmin }) {
                     x={pos.x}
                     y={pos.y}
                     isOwner={canEdit(note)}
-                    isPending={note.status === "PENDING"}
                     isDragging={dragPos?.id === note.id}
                     likes={like.likes}
                     isLiked={like.liked}
@@ -582,18 +580,12 @@ export default function NoteWall({ notes, currentVisitorId, isAdmin }) {
                         博主
                       </span>
                     )}
-                    {note.status === "PENDING" && (
-                      <span className="rounded-full bg-yellow-100 px-1.5 py-px text-[10px] text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400">
-                        待审核
-                      </span>
-                    )}
                     <span className="text-xs text-muted">{formatDateTime(note.createdAt)}</span>
                   </span>
                   <span className="mt-1 block whitespace-pre-wrap text-sm text-foreground/90">
                     {note.content}
                   </span>
-                  {note.status !== "PENDING" && (
-                    <span className="mt-2 flex items-center justify-end">
+                  <span className="mt-2 flex items-center justify-end">
                       <button
                         type="button"
                         onClick={() => toggleLike(note)}
@@ -610,7 +602,6 @@ export default function NoteWall({ notes, currentVisitorId, isAdmin }) {
                         <span className="text-muted">赞</span>
                       </button>
                     </span>
-                  )}
                 </span>
               </div>
             );

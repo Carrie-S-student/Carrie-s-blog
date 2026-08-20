@@ -1,9 +1,5 @@
 import { getAllNotesForAdmin } from "@/lib/notes";
-import {
-  publishNoteAction,
-  rejectNoteAction,
-  deleteNoteAction,
-} from "@/app/actions/notes-admin";
+import { deleteNoteAction } from "@/app/actions/notes-admin";
 import AdminNoteForm from "@/app/components/notes/AdminNoteForm";
 import { formatDateTime } from "@/lib/utils";
 import { getNoteColor, getNoteShape, normalizeNoteShape } from "@/lib/note-styles";
@@ -29,7 +25,11 @@ export default async function AdminNotesPage() {
         <AdminNoteForm />
       </div>
 
-      <h2 className="mt-8 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+      <p className="mt-6 text-sm text-neutral-500 dark:text-neutral-400">
+        访客添加的纸条会直接公开显示，无需审核；如内容不合适，可点击下方「删除」移除。
+      </p>
+
+      <h2 className="mt-4 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
         全部纸条（{notes.length}）
       </h2>
 
@@ -82,30 +82,6 @@ export default async function AdminNotesPage() {
               </div>
 
               <div className="mt-3 flex items-center gap-4 text-sm">
-                {note.status === "PENDING" && (
-                  <form
-                    action={async () => {
-                      "use server";
-                      await publishNoteAction(note.id);
-                    }}
-                  >
-                    <button type="submit" className="text-green-600 underline dark:text-green-400">
-                      通过并公开
-                    </button>
-                  </form>
-                )}
-                {note.status === "PENDING" && (
-                  <form
-                    action={async () => {
-                      "use server";
-                      await rejectNoteAction(note.id);
-                    }}
-                  >
-                    <button type="submit" className="text-neutral-700 underline dark:text-neutral-300">
-                      拒绝（不公开）
-                    </button>
-                  </form>
-                )}
                 <form
                   action={async () => {
                     "use server";
