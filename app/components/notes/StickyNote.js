@@ -2,13 +2,7 @@
 
 import { useMemo } from "react";
 import { formatDate } from "@/lib/utils";
-import { getNoteColor, normalizeNoteShape } from "@/lib/note-styles";
-
-// 各形状的尺寸与内容排布
-const SHAPE_STYLE = {
-  rectangle: { width: 188, minHeight: 122, padding: "14px 16px", center: false },
-  square: { width: 162, height: 162, padding: "15px 16px", center: false },
-};
+import { getNoteColor, normalizeNoteShape, estimateNoteSize } from "@/lib/note-styles";
 
 export default function StickyNote({
   note,
@@ -24,7 +18,9 @@ export default function StickyNote({
 }) {
   const { bg, text, border } = getNoteColor(note.color);
   const shapeKey = normalizeNoteShape(note.shape);
-  const shape = SHAPE_STYLE[shapeKey] ?? SHAPE_STYLE.rectangle;
+  const { width } = estimateNoteSize(note);
+  // 方形纸条短内容时保持正方形观感；长内容时由内容撑高
+  const minHeight = shapeKey === "square" ? width : 116;
   const isAuthor = note.authorType === "ADMIN";
 
   // 每条纸条的飘动节奏随机（基于 id 稳定生成，避免每次渲染都变）
@@ -60,21 +56,25 @@ export default function StickyNote({
         }}
       >
         <div
-          className={`note-shape-${shapeKey} relative flex overflow-hidden shadow-[0_10px_24px_-12px_rgba(0,0,0,0.35)]`}
+          className={`note-shape-${shapeKey} relative flex shadow-[0_10px_24px_-12px_rgba(0,0,0,0.35)]`}
           style={{
-            ...shape,
-            width: shape.width,
-            minHeight: shape.height,
+            width,
+            minHeight,
             background: bg,
             color: text,
             border: isAuthor ? `3px solid ${text}` : `2px solid ${border}`,
             flexDirection: "column",
-            alignItems: shape.center ? "center" : "stretch",
             justifyContent: "center",
-            textAlign: shape.center ? "center" : "left",
           }}
         >
-          <div className="flex h-full w-full flex-col" style={{ padding: shape.padding }}>
+          <div
+            className="flex w-full flex-col"
+            style={{
+              padding: shapeKey === "square" ? "15px 15px 13px" : "13px 16px 11px",
+              overflowWrap: "anywhere", // 长英文/URL 等自动换行，不撑破纸条
+              wordBreak: "break-word",
+            }}
+          >
             <div className="flex items-center justify-between gap-1 text-[10px] opacity-75">
               <span className="truncate font-semibold">{note.nickname || "匿名"}</span>
               {isAuthor && (
@@ -87,11 +87,8 @@ export default function StickyNote({
               )}
             </div>
 
-            <p
-              className={`mt-1 flex-1 whitespace-pre-wrap text-[13px] leading-snug ${
-                shape.center ? "line-clamp-3" : "line-clamp-4"
-              }`}
-            >
+            {/* 内容完整展示：高度随内容自动增长，不截断 */}
+            <p className="mt-1 whitespace-pre-wrap text-[13px] leading-[1.45]">
               {note.content}
             </p>
 

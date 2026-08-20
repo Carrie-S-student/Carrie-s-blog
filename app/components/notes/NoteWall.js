@@ -7,7 +7,7 @@ import NoteDetail from "./NoteDetail";
 import NoteComposer from "./NoteComposer";
 import { placeNote, toggleNoteLikeAction } from "@/app/actions/notes";
 import { formatDateTime } from "@/lib/utils";
-import { getNoteColor, normalizeNoteShape } from "@/lib/note-styles";
+import { getNoteColor, estimateNoteSize } from "@/lib/note-styles";
 
 // 无限画布：世界尺寸 = 视口 × 倍率（纸条可放在任何位置，缩放/平移查看任意区域）
 const WORLD_W_MULT = 4; // 世界宽 = 视口宽 × 4
@@ -154,15 +154,14 @@ export default function NoteWall({ notes, currentVisitorId, isAdmin }) {
     let maxY = -Infinity;
     notes.forEach((note) => {
       const pos = getPosition(note);
-      const shapeKey = normalizeNoteShape(note.shape);
-      const nw = shapeKey === "square" ? 162 : 188;
-      const nh = shapeKey === "square" ? 162 : 122;
+      // 纸条居中定位，实际占位为 中心点 ± 半宽/半高
+      const { width: nw, height: nh } = estimateNoteSize(note);
       const px = (pos.x / 100) * size.w;
       const py = (pos.y / 100) * size.h;
-      minX = Math.min(minX, px);
-      minY = Math.min(minY, py);
-      maxX = Math.max(maxX, px + nw);
-      maxY = Math.max(maxY, py + nh);
+      minX = Math.min(minX, px - nw / 2);
+      minY = Math.min(minY, py - nh / 2);
+      maxX = Math.max(maxX, px + nw / 2);
+      maxY = Math.max(maxY, py + nh / 2);
     });
     const contentW = Math.max(1, maxX - minX);
     const contentH = Math.max(1, maxY - minY);
