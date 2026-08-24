@@ -4,7 +4,7 @@ import { verifySessionToken, SESSION_COOKIE_NAME } from "@/lib/session";
 /**
  * 分区门禁：
  * - 首页 / 关于 / 提问箱 / 留言墙 / Research 等公开页面：无需登录
- * - 文章区（/learning、/thinking 及其子页面）：未登录 → 重定向到 /gate 输密码
+ * - 文章区（/learning、/finance 及其子页面）：未登录 → 重定向到 /gate 输密码
  * - /gate 页：已登录则直接进首页
  * - 后台 /admin：只允许管理员访问，否则去 /admin/login
  * - /api：放行，由各接口内部自行鉴权（后台接口已有 requireAdmin 校验）
@@ -47,12 +47,12 @@ export async function middleware(request) {
     return NextResponse.next();
   }
 
-  // 需要访客或管理员会话的路径：学习与输入 / 思考与输出（含文章详情页）
+  // 需要访客或管理员会话的路径：学习与思考 / 财经专栏（含文章详情页）
   const isProtectedPath =
     pathname === "/learning" ||
     pathname.startsWith("/learning/") ||
-    pathname === "/thinking" ||
-    pathname.startsWith("/thinking/");
+    pathname === "/finance" ||
+    pathname.startsWith("/finance/");
 
   if (isProtectedPath && !isAdmin && !isVisitor) {
     const url = new URL("/gate", request.url);

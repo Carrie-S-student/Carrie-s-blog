@@ -13,6 +13,7 @@ function readPostFields(formData) {
   const content = (formData.get("content") || "").toString();
   const coverImage = (formData.get("coverImage") || "").toString().trim();
   const section = (formData.get("section") || "").toString();
+  const folderId = (formData.get("folderId") || "").toString().trim();
   const published = formData.get("published") === "on";
 
   if (!title) {
@@ -22,10 +23,10 @@ function readPostFields(formData) {
     return { error: "文章内容不能为空。" };
   }
   if (!VALID_SECTIONS.includes(section)) {
-    return { error: "请选择一个栏目（学习与输入 / 思考与输出）。" };
+    return { error: "请选择一个栏目（学习与思考 / 财经专栏）。" };
   }
 
-  return { fields: { title, excerpt, content, coverImage, section, published } };
+  return { fields: { title, excerpt, content, coverImage, section, folderId: folderId || null, published } };
 }
 
 function readTagIds(formData) {
@@ -49,6 +50,8 @@ export async function createPostAction(prevState, formData) {
 
   revalidatePath("/");
   revalidatePath(sectionPath(post.section));
+  revalidatePath(`${sectionPath(post.section)}/all`);
+  revalidatePath(`${sectionPath(post.section)}/folder`);
   redirect("/admin/posts");
 }
 
@@ -67,6 +70,8 @@ export async function updatePostAction(id, prevState, formData) {
 
   revalidatePath("/");
   revalidatePath(sectionPath(post.section));
+  revalidatePath(`${sectionPath(post.section)}/all`);
+  revalidatePath(`${sectionPath(post.section)}/folder`);
   if (existing && existing.slug !== post.slug) {
     revalidatePath(`${sectionPath(existing.section)}/${existing.slug}`);
   }
@@ -83,6 +88,8 @@ export async function deletePostAction(id) {
   if (existing) {
     revalidatePath("/");
     revalidatePath(sectionPath(existing.section));
+    revalidatePath(`${sectionPath(existing.section)}/all`);
+    revalidatePath(`${sectionPath(existing.section)}/folder`);
     revalidatePath(`${sectionPath(existing.section)}/${existing.slug}`);
   }
 }

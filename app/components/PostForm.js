@@ -71,19 +71,21 @@ function CoverImageUploader({ defaultUrl, onChange }) {
 }
 
 const SECTION_OPTIONS = [
-  { value: "LEARNING", label: "学习与输入" },
-  { value: "THINKING", label: "思考与输出" },
+  { value: "LEARNING", label: "学习与思考" },
+  { value: "FINANCE", label: "财经专栏" },
 ];
 
 /**
  * 新建/编辑文章共用的表单。action 是绑定好 postId（编辑时）的 Server Action。
  * availableTags: 后台可用的所有标签（用于标签选择器）
+ * availableFolders: 后台可用的所有文件夹（用于文件夹选择器）
  */
-export default function PostForm({ action, post, availableTags = [] }) {
+export default function PostForm({ action, post, availableTags = [], availableFolders = [] }) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const [content, setContent] = useState(post?.content || "");
   const [title, setTitle] = useState(post?.title || "");
   const [selectedSection, setSelectedSection] = useState(post?.section || "LEARNING");
+  const [selectedFolderId, setSelectedFolderId] = useState(post?.folderId || "");
 
   // 受控标签选中状态：以 React state 为准，不再依赖 DOM defaultChecked
   const [selectedTagIds, setSelectedTagIds] = useState(
@@ -92,6 +94,8 @@ export default function PostForm({ action, post, availableTags = [] }) {
 
   // 当前选中栏目下的标签列表
   const sectionTags = availableTags.filter((tag) => tag.section === selectedSection);
+  // 当前选中栏目下的文件夹列表
+  const sectionFolders = availableFolders.filter((folder) => folder.section === selectedSection);
 
   const toggleTag = useCallback((tagId) => {
     setSelectedTagIds((prev) =>
@@ -99,7 +103,7 @@ export default function PostForm({ action, post, availableTags = [] }) {
     );
   }, []);
 
-  // 切换栏目时：清除不属于新栏目的已选标签
+  // 切换栏目时：清除不属于新栏目的已选标签与文件夹
   const handleSectionChange = useCallback(
     (section) => {
       setSelectedSection(section);
@@ -107,8 +111,12 @@ export default function PostForm({ action, post, availableTags = [] }) {
         .filter((t) => t.section === section)
         .map((t) => t.id);
       setSelectedTagIds((prev) => prev.filter((id) => newSectionTagIds.includes(id)));
+      const newSectionFolderIds = availableFolders
+        .filter((f) => f.section === section)
+        .map((f) => f.id);
+      setSelectedFolderId((prev) => (newSectionFolderIds.includes(prev) ? prev : ""));
     },
-    [availableTags]
+    [availableTags, availableFolders]
   );
 
   return (
@@ -148,6 +156,28 @@ export default function PostForm({ action, post, availableTags = [] }) {
             </label>
           ))}
         </div>
+      </div>
+
+      {/* 文件夹选择：栏目下的二级分类，可选（未分类） */}
+      <div>
+        <label className="mb-1 block text-sm font-medium text-foreground">所属文件夹（选填）</label>
+        <select
+          name="folderId"
+          value={selectedFolderId || ""}
+          onChange={(e) => setSelectedFolderId(e.target.value)}
+          className="w-full rounded-lg border border-card-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
+        >
+          <option value="">未分类</option>
+          {sectionFolders.map((folder) => (
+            <option key={folder.id} value={folder.id}>
+              {folder.name}
+            </option>
+          ))}
+        </select>
+        <p className="mt-1 text-xs text-muted">
+          文件夹用于在栏目下对文章做进一步分类。当前栏目还没有文件夹时，可到
+          <a href="/admin/folders" className="underline">文件夹管理</a>中添加。
+        </p>
       </div>
 
       {/* 标签选择：使用 TagPill 组件，受控 state 驱动，支持多选 */}

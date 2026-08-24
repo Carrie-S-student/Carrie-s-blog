@@ -3,8 +3,8 @@ import ThemeToggle from "@/app/components/ThemeToggle";
 
 const NAV_LINKS = [
   { href: "/", label: "首页" },
-  { href: "/learning", label: "学习与输入" },
-  { href: "/thinking", label: "思考与输出" },
+  { href: "/learning", label: "学习与思考" },
+  { href: "/finance", label: "财经专栏" },
   { href: "/research", label: "Research" },
   { href: "/about", label: "关于我" },
   { href: "/ask", label: "提问箱" },

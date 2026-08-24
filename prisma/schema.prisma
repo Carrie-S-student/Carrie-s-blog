@@ -10,10 +10,12 @@ datasource db {
   provider = "postgresql"
 }
 
-// 文章所属栏目：学习与输入 / 思考与输出
+// 文章所属栏目：学习与思考 / 财经专栏
+// THINKING 为历史废弃值（原"思考与输出"），因 Neon 不支持删除枚举值而保留，代码中不使用
 enum Section {
-  LEARNING // 学习与输入
-  THINKING // 思考与输出
+  LEARNING // 学习与思考
+  FINANCE // 财经专栏
+  THINKING // 已废弃
 }
 
 enum CommentStatus {
@@ -46,11 +48,31 @@ model Post {
   updatedAt DateTime @updatedAt
   publishedAt DateTime?
 
+  // 所属文件夹（栏目下的二级分类），可空；文件夹删除后文章保留为未分类
+  folderId String?
+  folder   Folder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
   comments Comment[]
   tags     PostTag[]
   views    PostView[]
 
   @@index([section, published, publishedAt])
+  @@index([folderId])
+}
+
+// 文件夹：栏目（Section）下的二级分类。访客进入栏目页先看到文件夹列表，点击后查看该文件夹下的文章。
+model Folder {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String
+  section   Section
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts Post[]
+
+  @@unique([slug, section])
+  @@index([section])
 }
 
 // 访客用户：博客门禁系统。name（初始用户名）锁定，displayName（昵称）可后台设置，默认为用户名。

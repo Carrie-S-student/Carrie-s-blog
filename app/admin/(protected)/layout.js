@@ -12,6 +12,7 @@ export const metadata = {
 const NAV_ITEMS = [
   { href: "/admin", label: "概览" },
   { href: "/admin/posts", label: "文章管理" },
+  { href: "/admin/folders", label: "文件夹管理" },
   { href: "/admin/tags", label: "标签管理" },
   { href: "/admin/comments", label: "评论管理" },
   { href: "/admin/questions", label: "提问箱" },

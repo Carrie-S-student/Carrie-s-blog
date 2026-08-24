@@ -3,19 +3,19 @@ import Link from "next/link";
 const SECTION_INFO = {
   LEARNING: {
     href: "/learning",
-    title: "学习与输入",
-    description: "记录读过的书、上过的课、踩过的坑，把学到的东西沉淀下来。",
+    title: "学习与思考",
+    description: "记录读过的书、上过的课，以及一些零散的想法和总结。",
   },
-  THINKING: {
-    href: "/thinking",
-    title: "思考与输出",
-    description: "分享一些日常的想法、观察和感悟，欢迎一起讨论。",
+  FINANCE: {
+    href: "/finance",
+    title: "财经专栏",
+    description: "关注财经动态、投资理财相关的观点与记录。",
   },
 };
 
 /**
  * 关于我页面底部的栏目导航卡片。
- * 点击后跳转到 /learning 或 /thinking 对应页面。
+ * 点击后跳转到 /learning 或 /finance 对应页面。
  */
 export default function SectionNavCard({ section }) {
   const info = SECTION_INFO[section];

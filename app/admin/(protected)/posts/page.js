@@ -28,6 +28,7 @@ export default async function AdminPostsPage() {
             <tr>
               <th className="px-4 py-2.5 font-medium">标题</th>
               <th className="px-4 py-2.5 font-medium">栏目</th>
+              <th className="px-4 py-2.5 font-medium">文件夹</th>
               <th className="px-4 py-2.5 font-medium">状态</th>
               <th className="px-4 py-2.5 font-medium">更新时间</th>
               <th className="px-4 py-2.5 font-medium">操作</th>
@@ -36,7 +37,7 @@ export default async function AdminPostsPage() {
           <tbody>
             {posts.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
+                <td colSpan={6} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
                   还没有任何文章，点右上角「写新文章」开始吧。
                 </td>
               </tr>
@@ -46,6 +47,9 @@ export default async function AdminPostsPage() {
                 <td className="px-4 py-2.5 text-neutral-900 dark:text-neutral-100">{post.title}</td>
                 <td className="px-4 py-2.5 text-neutral-500 dark:text-neutral-400">
                   {SECTION_LABELS[post.section]}
+                </td>
+                <td className="px-4 py-2.5 text-neutral-500 dark:text-neutral-400">
+                  {post.folder?.name ?? <span className="text-neutral-400 dark:text-neutral-600">未分类</span>}
                 </td>
                 <td className="px-4 py-2.5">
                   {post.published ? (

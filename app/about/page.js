@@ -35,10 +35,10 @@ export default async function AboutPage() {
         />
       </div>
 
-      {/* 学习与输入 / 思考与输出 —— 可点击跳转的导航卡片 */}
+      {/* 学习与思考 / 财经专栏 —— 可点击跳转的导航卡片 */}
       <div className="mt-12 grid gap-6 sm:grid-cols-2">
         <SectionNavCard section="LEARNING" />
-        <SectionNavCard section="THINKING" />
+        <SectionNavCard section="FINANCE" />
       </div>
 
       {/* 联系我 */}

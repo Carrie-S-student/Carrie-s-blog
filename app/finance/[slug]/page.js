@@ -11,7 +11,7 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default async function ThinkingPostPage({ params }) {
+export default async function FinancePostPage({ params }) {
   const { slug } = await params;
-  return <PostDetailPage section="THINKING" basePath="/thinking" slug={decodeURIComponent(slug)} />;
+  return <PostDetailPage section="FINANCE" basePath="/finance" slug={decodeURIComponent(slug)} />;
 }

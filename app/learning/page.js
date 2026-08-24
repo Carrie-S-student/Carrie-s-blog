@@ -1,19 +1,17 @@
-import SectionListPage from "@/app/components/SectionListPage";
+import FolderListPage from "@/app/components/FolderListPage";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "学习与输入",
+  title: "学习与思考",
 };
 
-export default async function LearningPage({ searchParams }) {
-  const params = await searchParams;
+export default function LearningPage() {
   return (
-    <SectionListPage
+    <FolderListPage
       section="LEARNING"
-      title="学习与输入"
-      description="学到的知识、读过的书、上过的课，都记在这里。"
-      tagSlug={params?.tag || undefined}
+      title="学习与思考"
+      description="学到的知识、读过的书，以及一些零散的想法和总结，都记在这里。"
     />
   );
 }

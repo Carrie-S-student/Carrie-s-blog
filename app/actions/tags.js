@@ -26,7 +26,7 @@ export async function createTagAction(prevState, formData) {
 
   revalidatePath("/admin/tags");
   revalidatePath("/learning");
-  revalidatePath("/thinking");
+  revalidatePath("/finance");
 
   return { success: true };
 }
@@ -47,7 +47,7 @@ export async function updateTagAction(id, prevState, formData) {
 
   revalidatePath("/admin/tags");
   revalidatePath("/learning");
-  revalidatePath("/thinking");
+  revalidatePath("/finance");
 
   return { success: true };
 }
@@ -59,5 +59,5 @@ export async function deleteTagAction(id) {
 
   revalidatePath("/admin/tags");
   revalidatePath("/learning");
-  revalidatePath("/thinking");
+  revalidatePath("/finance");
 }

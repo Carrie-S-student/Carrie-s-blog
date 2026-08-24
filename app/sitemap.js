@@ -9,7 +9,7 @@ export default async function sitemap() {
   const staticPages = [
     { url: BASE_URL, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
     { url: `${BASE_URL}/learning`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
-    { url: `${BASE_URL}/thinking`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/finance`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
     { url: `${BASE_URL}/research`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE_URL}/about`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/ask`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.4 },
@@ -22,7 +22,7 @@ export default async function sitemap() {
   });
 
   const postPages = posts.map((post) => ({
-    url: `${BASE_URL}/${post.section === "LEARNING" ? "learning" : "thinking"}/${post.slug}`,
+    url: `${BASE_URL}/${post.section === "FINANCE" ? "finance" : "learning"}/${post.slug}`,
     lastModified: post.updatedAt,
     changeFrequency: "weekly",
     priority: 0.7,
