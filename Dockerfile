@@ -8,8 +8,11 @@
 FROM node:22-slim AS builder
 WORKDIR /app
 
-# 先只复制依赖清单，最大化利用 Docker 构建缓存
+# 复制依赖清单 + prisma schema（postinstall 会运行 prisma generate，需要 schema 已存在）
 COPY package.json package-lock.json ./
+COPY prisma ./prisma
+COPY prisma.config.ts ./prisma.config.ts
+
 # 用 npm install 而非 npm ci：可选依赖（如 sharp 的 @emnapi/*）在 lock 缺失时
 # npm ci 会直接失败，npm install 则按 package.json 解析，构建更稳健
 RUN npm install --no-audit --no-fund
