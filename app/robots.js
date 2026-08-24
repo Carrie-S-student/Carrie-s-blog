@@ -1,6 +1,9 @@
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://your-domain.com";
+import { getSiteUrl } from "@/lib/site";
+
+export const dynamic = "force-dynamic";
 
 export default function robots() {
+  const BASE_URL = getSiteUrl();
   return {
     rules: {
       userAgent: "*",

@@ -3,6 +3,7 @@ import Link from "next/link";
 import SiteFooter from "@/app/components/SiteFooter";
 import ThemeToggle from "@/app/components/ThemeToggle";
 import PageTransition from "@/app/components/PageTransition";
+import { getSiteUrl } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,22 +16,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
-  title: {
-    default: "Carrie's Blog",
-    template: "%s · Carrie's Blog",
-  },
-  description:
-    "Carrie 的个人博客 — 分享学术研究、技术学习与日常思考。",
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-  ),
-  openGraph: {
-    title: "Carrie's Blog",
-    description: "Carrie 的个人博客 — 分享学术研究、技术学习与日常思考。",
-    type: "website",
-  },
-};
+export function generateMetadata() {
+  return {
+    title: {
+      default: "Carrie's Blog",
+      template: "%s · Carrie's Blog",
+    },
+    description:
+      "Carrie 的个人博客 — 分享学术研究、技术学习与日常思考。",
+    metadataBase: new URL(getSiteUrl()),
+    openGraph: {
+      title: "Carrie's Blog",
+      description: "Carrie 的个人博客 — 分享学术研究、技术学习与日常思考。",
+      type: "website",
+    },
+  };
+}
 
 // 在 React 接管页面之前就把深色模式的 class 设好，避免刷新时先亮一下再变暗（FOUC）。
 // 必须是同步、内联的脚本，放在 <head> 最前面。

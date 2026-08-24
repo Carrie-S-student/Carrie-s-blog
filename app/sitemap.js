@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/prisma";
+import { getSiteUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://your-domain.com";
-
 export default async function sitemap() {
+  const BASE_URL = getSiteUrl();
   // 静态页面
   const staticPages = [
     { url: BASE_URL, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
