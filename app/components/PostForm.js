@@ -75,16 +75,43 @@ const SECTION_OPTIONS = [
   { value: "FINANCE", label: "财经专栏" },
 ];
 
+/** 把文件夹按 parentId 组织成树，返回树序扁平数组（带层级深度），用于下拉框缩进展示 */
+function buildFolderTree(folders) {
+  const byParent = new Map();
+  for (const f of folders) {
+    if (!byParent.has(f.parentId)) byParent.set(f.parentId, []);
+    byParent.get(f.parentId).push(f);
+  }
+  const out = [];
+  const walk = (parentId, depth) => {
+    for (const f of byParent.get(parentId) || []) {
+      out.push({ folder: f, depth });
+      walk(f.id, depth + 1);
+    }
+  };
+  walk(null, 0);
+  return out;
+}
+
 /**
  * 新建/编辑文章共用的表单。action 是绑定好 postId（编辑时）的 Server Action。
  * availableTags: 后台可用的所有标签（用于标签选择器）
  * availableFolders: 后台可用的所有文件夹（用于文件夹选择器）
+ * defaultSection: 新建文章时的默认栏目（来自栏目管理页的「写新文章」入口）
  */
-export default function PostForm({ action, post, availableTags = [], availableFolders = [] }) {
+export default function PostForm({
+  action,
+  post,
+  availableTags = [],
+  availableFolders = [],
+  defaultSection,
+}) {
   const [state, formAction, pending] = useActionState(action, undefined);
   const [content, setContent] = useState(post?.content || "");
   const [title, setTitle] = useState(post?.title || "");
-  const [selectedSection, setSelectedSection] = useState(post?.section || "LEARNING");
+  const [selectedSection, setSelectedSection] = useState(
+    post?.section || defaultSection || "LEARNING"
+  );
   const [selectedFolderId, setSelectedFolderId] = useState(post?.folderId || "");
 
   // 受控标签选中状态：以 React state 为准，不再依赖 DOM defaultChecked
@@ -94,8 +121,10 @@ export default function PostForm({ action, post, availableTags = [], availableFo
 
   // 当前选中栏目下的标签列表
   const sectionTags = availableTags.filter((tag) => tag.section === selectedSection);
-  // 当前选中栏目下的文件夹列表
-  const sectionFolders = availableFolders.filter((folder) => folder.section === selectedSection);
+  // 当前选中栏目下的文件夹列表（按层级树序）
+  const sectionFolders = buildFolderTree(
+    availableFolders.filter((folder) => folder.section === selectedSection)
+  );
 
   const toggleTag = useCallback((tagId) => {
     setSelectedTagIds((prev) =>
@@ -148,7 +177,7 @@ export default function PostForm({ action, post, availableTags = [], availableFo
                 type="radio"
                 name="section"
                 value={option.value}
-                defaultChecked={(post?.section || "LEARNING") === option.value}
+                defaultChecked={(post?.section || defaultSection || "LEARNING") === option.value}
                 onChange={() => handleSectionChange(option.value)}
                 className="accent-accent"
               />
@@ -167,16 +196,24 @@ export default function PostForm({ action, post, availableTags = [], availableFo
           onChange={(e) => setSelectedFolderId(e.target.value)}
           className="w-full rounded-lg border border-card-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-accent"
         >
-          <option value="">未分类</option>
-          {sectionFolders.map((folder) => (
+          <option value="">未分类（直接显示在栏目页）</option>
+          {sectionFolders.map(({ folder, depth }) => (
             <option key={folder.id} value={folder.id}>
+              {"　".repeat(depth)}
+              {depth > 0 ? "└ " : ""}
               {folder.name}
             </option>
           ))}
         </select>
         <p className="mt-1 text-xs text-muted">
-          文件夹用于在栏目下对文章做进一步分类。当前栏目还没有文件夹时，可到
-          <a href="/admin/folders" className="underline">文件夹管理</a>中添加。
+          选「未分类」的文章会直接显示在栏目页；文件夹支持多级嵌套。需要管理文件夹请到
+          <a
+            href={`/admin/sections/${selectedSection.toLowerCase()}?tab=folders`}
+            className="underline"
+          >
+            栏目管理 · 文件夹
+          </a>
+          。
         </p>
       </div>
 
@@ -209,7 +246,12 @@ export default function PostForm({ action, post, availableTags = [], availableFo
       {sectionTags.length === 0 && (
         <p className="text-xs text-neutral-400">
           当前栏目下还没有标签，请先在
-          <a href="/admin/tags" className="underline">标签管理</a>
+          <a
+            href={`/admin/sections/${selectedSection.toLowerCase()}?tab=tags`}
+            className="underline"
+          >
+            栏目管理 · 标签
+          </a>
           中创建。
         </p>
       )}

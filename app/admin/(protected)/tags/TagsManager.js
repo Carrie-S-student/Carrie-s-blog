@@ -9,7 +9,7 @@ const SECTION_OPTIONS = [
   { value: "FINANCE", label: SECTION_LABELS.FINANCE },
 ];
 
-function CreateTagForm() {
+function CreateTagForm({ section }) {
   const formRef = useRef(null);
   const [state, formAction, pending] = useActionState(createTagAction, undefined);
 
@@ -31,20 +31,24 @@ function CreateTagForm() {
           className="w-40 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
         />
       </div>
-      <div>
-        <label className="mb-1 block text-xs text-neutral-500 dark:text-neutral-400">所属栏目</label>
-        <select
-          name="section"
-          defaultValue="LEARNING"
-          className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-        >
-          {SECTION_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {section ? (
+        <input type="hidden" name="section" value={section} />
+      ) : (
+        <div>
+          <label className="mb-1 block text-xs text-neutral-500 dark:text-neutral-400">所属栏目</label>
+          <select
+            name="section"
+            defaultValue="LEARNING"
+            className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+          >
+            {SECTION_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <button
         type="submit"
         disabled={pending}
@@ -96,20 +100,29 @@ function EditTagForm({ tag, onDone }) {
   );
 }
 
-export default function TagsManager({ tags: initialTags }) {
+/**
+ * 标签管理。
+ * 传入 section（LEARNING/FINANCE）时限定为单个栏目（隐藏栏目选择与栏目徽章），
+ * 用于「学习与思考 / 财经专栏」栏目管理页内嵌；不传时管理全部栏目。
+ */
+export default function TagsManager({ tags: initialTags, section }) {
   const [editingId, setEditingId] = useState(null);
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">标签管理</h1>
+      {section ? (
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">标签管理</h2>
+      ) : (
+        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">标签管理</h1>
+      )}
       <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-        标签相当于每个栏目下的文件夹，用于对文章进行分类。在编辑文章时可以选择一个或多个标签。
+        标签用于对文章做进一步的交叉分类，一篇文章可以打多个标签。在编辑文章时可以选择。
       </p>
 
       {/* 新建标签表单 */}
       <div className="mt-6 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
         <h2 className="mb-3 text-sm font-medium text-neutral-700 dark:text-neutral-300">新建标签</h2>
-        <CreateTagForm />
+        <CreateTagForm section={section} />
       </div>
 
       {/* 标签列表 */}
@@ -130,9 +143,11 @@ export default function TagsManager({ tags: initialTags }) {
                   <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                     {tag.name}
                   </span>
-                  <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
-                    {SECTION_LABELS[tag.section]}
-                  </span>
+                  {!section && (
+                    <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+                      {SECTION_LABELS[tag.section]}
+                    </span>
+                  )}
                   <span className="text-xs text-neutral-400">
                     {tag._count?.posts ?? 0} 篇文章
                   </span>

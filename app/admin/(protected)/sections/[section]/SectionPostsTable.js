@@ -1,33 +1,27 @@
 import Link from "next/link";
-import { getAllPostsForAdmin } from "@/lib/posts";
 import { deletePostAction } from "@/app/actions/posts";
-import { formatDateTime, SECTION_LABELS } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 
-export const metadata = {
-  title: "文章管理",
-};
-
-export default async function AdminPostsPage() {
-  const posts = await getAllPostsForAdmin();
-
+export default function SectionPostsTable({ posts, sectionKey }) {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">文章管理</h1>
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          共 {posts.length} 篇文章。没有选文件夹的文章会直接显示在栏目页。
+        </p>
         <Link
-          href="/admin/posts/new"
+          href={`/admin/posts/new?section=${sectionKey}`}
           className="rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
         >
           + 写新文章
         </Link>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800">
+      <div className="mt-4 overflow-hidden rounded-xl border border-neutral-200 dark:border-neutral-800">
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-100 text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
             <tr>
               <th className="px-4 py-2.5 font-medium">标题</th>
-              <th className="px-4 py-2.5 font-medium">栏目</th>
               <th className="px-4 py-2.5 font-medium">文件夹</th>
               <th className="px-4 py-2.5 font-medium">状态</th>
               <th className="px-4 py-2.5 font-medium">更新时间</th>
@@ -37,7 +31,7 @@ export default async function AdminPostsPage() {
           <tbody>
             {posts.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
+                <td colSpan={5} className="px-4 py-8 text-center text-neutral-500 dark:text-neutral-400">
                   还没有任何文章，点右上角「写新文章」开始吧。
                 </td>
               </tr>
@@ -45,9 +39,6 @@ export default async function AdminPostsPage() {
             {posts.map((post) => (
               <tr key={post.id} className="border-t border-neutral-200 dark:border-neutral-800">
                 <td className="px-4 py-2.5 text-neutral-900 dark:text-neutral-100">{post.title}</td>
-                <td className="px-4 py-2.5 text-neutral-500 dark:text-neutral-400">
-                  {SECTION_LABELS[post.section]}
-                </td>
                 <td className="px-4 py-2.5 text-neutral-500 dark:text-neutral-400">
                   {post.folder?.name ?? <span className="text-neutral-400 dark:text-neutral-600">未分类</span>}
                 </td>

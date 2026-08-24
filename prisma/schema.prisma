@@ -60,12 +60,17 @@ model Post {
   @@index([folderId])
 }
 
-// 文件夹：栏目（Section）下的二级分类。访客进入栏目页先看到文件夹列表，点击后查看该文件夹下的文章。
+// 文件夹：栏目（Section）下的分类，支持多级嵌套。
+// 文章可以不挂在文件夹下（未分类，直接显示在栏目页）；删除文件夹时子文件夹提升一级、文章变未分类。
 model Folder {
   id        String   @id @default(cuid())
   name      String
   slug      String
   section   Section
+  color     String?  @default("amber") // 文件夹颜色 key（见 lib/folderColors.js），淡色系
+  parentId  String? // 父文件夹，null 表示顶层文件夹；支持嵌套
+  parent    Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children  Folder[] @relation("FolderHierarchy")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -73,6 +78,7 @@ model Folder {
 
   @@unique([slug, section])
   @@index([section])
+  @@index([parentId])
 }
 
 // 访客用户：博客门禁系统。name（初始用户名）锁定，displayName（昵称）可后台设置，默认为用户名。
@@ -190,16 +196,6 @@ model NoteLike {
 
   @@unique([noteId, ip])
   @@index([noteId])
-}
-
-model Research {
-  id            String   @id @default(cuid())
-  title         String
-  publishedDate DateTime
-  journal       String
-  createdAt     DateTime @default(now())
-
-  @@index([publishedDate])
 }
 
 model AdminSettings {

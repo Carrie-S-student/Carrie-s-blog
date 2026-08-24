@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/dal";
 import { createPost, updatePost, deletePost, getPostByIdForAdmin } from "@/lib/posts";
 import { setPostTags } from "@/lib/tags";
-import { VALID_SECTIONS, sectionPath } from "@/lib/utils";
+import { VALID_SECTIONS, sectionPath, sectionAdminPath } from "@/lib/utils";
 
 function readPostFields(formData) {
   const title = (formData.get("title") || "").toString().trim();
@@ -34,6 +34,17 @@ function readTagIds(formData) {
   return tagIds.filter((id) => typeof id === "string" && id.length > 0);
 }
 
+// 新增/更新/删除文章后，让首页、前台栏目相关页面与后台栏目管理页刷新
+function revalidatePostPaths(post) {
+  const path = sectionPath(post.section);
+  revalidatePath("/");
+  revalidatePath(path);
+  revalidatePath(`${path}/all`);
+  revalidatePath(`${path}/folder`);
+  revalidatePath(sectionAdminPath(post.section));
+  revalidatePath(`${path}/${post.slug}`);
+}
+
 export async function createPostAction(prevState, formData) {
   await requireAdmin();
 
@@ -48,11 +59,8 @@ export async function createPostAction(prevState, formData) {
     await setPostTags(post.id, tagIds);
   }
 
-  revalidatePath("/");
-  revalidatePath(sectionPath(post.section));
-  revalidatePath(`${sectionPath(post.section)}/all`);
-  revalidatePath(`${sectionPath(post.section)}/folder`);
-  redirect("/admin/posts");
+  revalidatePostPaths(post);
+  redirect(sectionAdminPath(post.section));
 }
 
 export async function updatePostAction(id, prevState, formData) {
@@ -68,15 +76,12 @@ export async function updatePostAction(id, prevState, formData) {
   const tagIds = readTagIds(formData);
   await setPostTags(post.id, tagIds);
 
-  revalidatePath("/");
-  revalidatePath(sectionPath(post.section));
-  revalidatePath(`${sectionPath(post.section)}/all`);
-  revalidatePath(`${sectionPath(post.section)}/folder`);
-  if (existing && existing.slug !== post.slug) {
+  revalidatePostPaths(post);
+  if (existing && existing.section !== post.section) {
+    revalidatePath(sectionAdminPath(existing.section));
     revalidatePath(`${sectionPath(existing.section)}/${existing.slug}`);
   }
-  revalidatePath(`${sectionPath(post.section)}/${post.slug}`);
-  redirect("/admin/posts");
+  redirect(sectionAdminPath(post.section));
 }
 
 export async function deletePostAction(id) {
@@ -90,6 +95,7 @@ export async function deletePostAction(id) {
     revalidatePath(sectionPath(existing.section));
     revalidatePath(`${sectionPath(existing.section)}/all`);
     revalidatePath(`${sectionPath(existing.section)}/folder`);
+    revalidatePath(sectionAdminPath(existing.section));
     revalidatePath(`${sectionPath(existing.section)}/${existing.slug}`);
   }
 }

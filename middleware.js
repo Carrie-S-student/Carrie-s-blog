@@ -3,7 +3,7 @@ import { verifySessionToken, SESSION_COOKIE_NAME } from "@/lib/session";
 
 /**
  * 分区门禁：
- * - 首页 / 关于 / 提问箱 / 留言墙 / Research 等公开页面：无需登录
+ * - 首页 / 关于 / 提问箱 / 留言墙 等公开页面：无需登录
  * - 文章区（/learning、/finance 及其子页面）：未登录 → 重定向到 /gate 输密码
  * - /gate 页：已登录则直接进首页
  * - 后台 /admin：只允许管理员访问，否则去 /admin/login

@@ -11,13 +11,11 @@ export const metadata = {
 
 const NAV_ITEMS = [
   { href: "/admin", label: "概览" },
-  { href: "/admin/posts", label: "文章管理" },
-  { href: "/admin/folders", label: "文件夹管理" },
-  { href: "/admin/tags", label: "标签管理" },
+  { href: "/admin/sections/learning", label: "学习与思考" },
+  { href: "/admin/sections/finance", label: "财经专栏" },
   { href: "/admin/comments", label: "评论管理" },
   { href: "/admin/questions", label: "提问箱" },
   { href: "/admin/notes", label: "留言墙" },
-  { href: "/admin/research", label: "Research" },
   { href: "/admin/visitors", label: "访问用户" },
   { href: "/admin/stats", label: "访问统计" },
   { href: "/admin/settings", label: "站点设置" },

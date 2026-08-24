@@ -7,15 +7,16 @@ import PostForm from "@/app/components/PostForm";
 
 export default async function EditPostPage({ params }) {
   const { id } = await params;
-  const [post, tags, folders] = await Promise.all([
-    getPostByIdForAdmin(id),
-    getAllTagsForAdmin(),
-    getAllFoldersForAdmin(),
-  ]);
+  const post = await getPostByIdForAdmin(id);
 
   if (!post) {
     notFound();
   }
+
+  const [tags, folders] = await Promise.all([
+    getAllTagsForAdmin(post.section),
+    getAllFoldersForAdmin(post.section),
+  ]);
 
   const boundUpdateAction = updatePostAction.bind(null, id);
 

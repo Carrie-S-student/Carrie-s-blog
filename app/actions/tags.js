@@ -3,8 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/dal";
 import { createTag, updateTag, deleteTag } from "@/lib/tags";
-import { VALID_SECTIONS } from "@/lib/utils";
+import { VALID_SECTIONS, sectionPath, sectionAdminPath } from "@/lib/utils";
 const MAX_TAG_NAME_LENGTH = 20;
+
+function revalidateTagPaths(section) {
+  const path = sectionPath(section);
+  revalidatePath(path);
+  revalidatePath(`${path}/all`);
+  revalidatePath(`${path}/folder`);
+  revalidatePath(sectionAdminPath(section));
+}
 
 export async function createTagAction(prevState, formData) {
   await requireAdmin();
@@ -24,9 +32,7 @@ export async function createTagAction(prevState, formData) {
 
   await createTag({ name, section });
 
-  revalidatePath("/admin/tags");
-  revalidatePath("/learning");
-  revalidatePath("/finance");
+  revalidateTagPaths(section);
 
   return { success: true };
 }
@@ -43,11 +49,9 @@ export async function updateTagAction(id, prevState, formData) {
     return { error: `标签名称最多 ${MAX_TAG_NAME_LENGTH} 个字。` };
   }
 
-  await updateTag(id, { name });
+  const tag = await updateTag(id, { name });
 
-  revalidatePath("/admin/tags");
-  revalidatePath("/learning");
-  revalidatePath("/finance");
+  revalidateTagPaths(tag.section);
 
   return { success: true };
 }
@@ -57,7 +61,8 @@ export async function deleteTagAction(id) {
 
   await deleteTag(id);
 
-  revalidatePath("/admin/tags");
   revalidatePath("/learning");
   revalidatePath("/finance");
+  revalidatePath("/admin/sections/learning");
+  revalidatePath("/admin/sections/finance");
 }

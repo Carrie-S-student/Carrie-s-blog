@@ -19,12 +19,14 @@ export default async function AdminHomePage() {
       getPostViewStats(),
     ]);
 
-  const publishedCount = posts.filter((p) => p.published).length;
+  const learningCount = posts.filter((p) => p.section === "LEARNING").length;
+  const financeCount = posts.filter((p) => p.section === "FINANCE").length;
   const pendingQuestions = questions.filter((q) => q.status === "PENDING").length;
   const totalViews = viewStats.reduce((sum, s) => sum + s.viewCount, 0);
 
   const cards = [
-    { href: "/admin/posts", label: "文章", value: `${publishedCount} / ${posts.length} 已发布` },
+    { href: "/admin/sections/learning", label: "学习与思考", value: `${learningCount} 篇文章` },
+    { href: "/admin/sections/finance", label: "财经专栏", value: `${financeCount} 篇文章` },
     { href: "/admin/comments", label: "评论", value: `共 ${comments.length} 条` },
     { href: "/admin/questions", label: "提问箱", value: `${pendingQuestions} 条待审核` },
     { href: "/admin/visitors", label: "访问用户", value: `共 ${visitors.length} 位` },
@@ -37,7 +39,7 @@ export default async function AdminHomePage() {
         欢迎回来
       </h1>
       <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-        从左侧菜单选择要管理的内容：文章、评论、提问箱、访客或统计。
+        文章按「学习与思考」「财经专栏」两个栏目分别管理，每个栏目内整合文章、标签和文件夹。
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
