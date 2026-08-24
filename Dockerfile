@@ -15,7 +15,9 @@ COPY prisma.config.ts ./prisma.config.ts
 
 # 用 npm install 而非 npm ci：可选依赖（如 sharp 的 @emnapi/*）在 lock 缺失时
 # npm ci 会直接失败，npm install 则按 package.json 解析，构建更稳健
-RUN npm install --no-audit --no-fund
+# DATABASE_URL 占位：postinstall 的 prisma generate 加载 prisma.config.ts 时会
+# 强校验 env("DATABASE_URL")（Prisma 7 行为），generate 本身不连库，给占位值即可
+RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" npm install --no-audit --no-fund
 
 # 复制源码（排除见 .dockerignore）
 COPY . .
