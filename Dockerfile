@@ -10,7 +10,9 @@ WORKDIR /app
 
 # 先只复制依赖清单，最大化利用 Docker 构建缓存
 COPY package.json package-lock.json ./
-RUN npm ci
+# 用 npm install 而非 npm ci：可选依赖（如 sharp 的 @emnapi/*）在 lock 缺失时
+# npm ci 会直接失败，npm install 则按 package.json 解析，构建更稳健
+RUN npm install --no-audit --no-fund
 
 # 复制源码（排除见 .dockerignore）
 COPY . .
